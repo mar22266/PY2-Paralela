@@ -3,6 +3,12 @@ REQUISITOS WSL:
 sudo apt-get update
 sudo apt-get install -y build-essential libssl-dev openmpi-bin libopenmpi-dev
 
+correr:
+make
+
+limpiar: 
+make clean
+
 #######################
 # Parte A paso 3
 chmod +x scripts/run_seq_sweep.sh
@@ -23,4 +29,5 @@ Cifrar
 Secuencial
 ./bin/bruteforce_seq --bruteforce -c data/cipher.bin -s "me llamo" -L 0 -U 16777216
 
+paralelo
 mpirun -np 4 ./bin/bruteforce_mpi -c data/cipher.bin -s "me llamo" -L 0 -U 16777216
