@@ -1,88 +1,43 @@
-# ===========================================
-# PROYECTO 2 - UVG: VERSION SECUENCIAL (PARTE A, INCISO 3)
-# COMPILA CON OPENSSL (PREFERIDO) O CON rpc/des_crypt.h SI ESTA DISPONIBLE
-# ===========================================
+# ================================
+#  PY2-Paralela - Makefile
+#  OpenMPI + OpenSSL (DES, EVP API)
+# ================================
 
-CC      ?= gcc
-CFLAGS  ?= -O3 -std=c11 -Wall -Wextra -Wshadow -Wpedantic
-LDFLAGS ?=
-LIBS    :=
-INC_DIR := include
-SRC_DIR := src
-BIN_DIR := bin
-OBJ_DIR := build
+MPICC := mpicc
+CC    := gcc
 
-# FUENTES (ajusta si tuvieras nombres distintos)
-SOURCES := $(SRC_DIR)/bruteforce_seq.c \
-           $(SRC_DIR)/des_compat.c \
-           $(SRC_DIR)/timer.c \
-           $(SRC_DIR)/util.c
+BIN   := bin
+SRC   := src
+INC   := include
+DATA  := data
+LOG   := logs
 
-OBJECTS := $(SOURCES:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
-TARGET  := $(BIN_DIR)/bruteforce_seq
+CSTD          := -std=c11
+CWARN         := -Wall -Wextra -Wshadow -Wpedantic
+COPTS         := -O3 -march=native -mtune=native
+CDEFS         := -D_POSIX_C_SOURCE=200809L
+CFLAGS_COMMON := $(CSTD) $(CWARN) $(COPTS) $(CDEFS) -I$(INC)
+LDFLAGS       := -lcrypto
 
-# HABILITA CLOCK_MONOTONIC EN <time.h>
-CFLAGS += -D_POSIX_C_SOURCE=200809L
+SEQ_SRC := $(SRC)/bruteforce_seq.c $(SRC)/des_utils.c
+MPI_SRC := $(SRC)/bruteforce_mpi.c $(SRC)/des_utils.c
 
-# SILENCIA DEPRECATIONS DE DES EN OPENSSL 3 (académico)
-CFLAGS += -Wno-deprecated-declarations
+SEQ_BIN := $(BIN)/bruteforce_seq
+MPI_BIN := $(BIN)/bruteforce_mpi
 
-# DETECCION SENCILLA DE OPENSSL
-HAVE_OPENSSL := $(shell printf "#include <openssl/des.h>\n" | $(CC) -E -M - 2>/dev/null >/dev/null && echo 1 || echo 0)
-ifeq ($(HAVE_OPENSSL),1)
-  CFLAGS  += -DHAVE_OPENSSL
-  LIBS    += -lcrypto
-endif
-# SI TU DISTRO REQUIERE librt PARA clock_gettime (raro en glibc nuevas):
-# LIBS += -lrt
+.PHONY: all clean dirs
 
-# CREAR DIRECTORIOS (BIN/OBJ)
-$(shell mkdir -p $(BIN_DIR) $(OBJ_DIR))
+all: dirs $(SEQ_BIN) $(MPI_BIN)
 
-.PHONY: all seq clean \
-        file_crypto \
-        mpi                # <--- AÑADIDO
+dirs:
+	@mkdir -p $(BIN) $(DATA) $(LOG)
 
-# ===========================================
-# (AÑADIDO) Nuevo binario: file_crypto
-# - Permite cifrar/descifrar archivos TXT/HEX con DES-ECB (des_compat)
-# - Fuentes específicas y objetos
-# ===========================================
-FILE_CRYPTO_SOURCES := $(SRC_DIR)/file_crypto.c $(SRC_DIR)/des_compat.c
-FILE_CRYPTO_OBJECTS := $(FILE_CRYPTO_SOURCES:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
-FILE_CRYPTO_TARGET  := $(BIN_DIR)/file_crypto
+$(SEQ_BIN): $(SEQ_SRC) $(INC)/des_utils.h
+	$(CC) $(CFLAGS_COMMON) -o $@ $(SEQ_SRC) $(LDFLAGS)
 
-# ====== (AÑADIDO) MPI ======
-# usamos mpicc para compilar/enlazar el binario MPI
-MPICC ?= mpicc
-MPI_TARGET := $(BIN_DIR)/bruteforce_mpi
-# Compilamos y enlazamos en un solo paso con mpicc (evita problemas de includes MPI)
-MPI_SOURCES := $(SRC_DIR)/bruteforce.c $(SRC_DIR)/des_compat.c
-
-# Construye todo: secuencial + file_crypto + mpi
-all: seq file_crypto mpi
-
-# ====== (LO ORIGINAL) ======
-seq: $(TARGET)
-
-$(TARGET): $(OBJECTS)
-	$(CC) $(CFLAGS) -I$(INC_DIR) $^ -o $@ $(LDFLAGS) $(LIBS)
-
-# REGLA GENERICA DE OBJETOS (sin dependencias a headers para evitar falsos "No rule...")
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
-	$(CC) $(CFLAGS) -I$(INC_DIR) -c $< -o $@
-
-# ====== (AÑADIDO) Regla para file_crypto ======
-file_crypto: $(FILE_CRYPTO_TARGET)
-
-$(FILE_CRYPTO_TARGET): $(FILE_CRYPTO_OBJECTS)
-	$(CC) $(CFLAGS) -I$(INC_DIR) $^ -o $@ $(LDFLAGS) $(LIBS)
-
-# ====== (AÑADIDO) Regla para bruteforce_mpi ======
-mpi: $(MPI_TARGET)
-
-$(MPI_TARGET): $(MPI_SOURCES)
-	$(MPICC) $(CFLAGS) -I$(INC_DIR) $^ -o $@ $(LDFLAGS) $(LIBS)
+$(MPI_BIN): $(MPI_SRC) $(INC)/des_utils.h
+	$(MPICC) $(CFLAGS_COMMON) -o $@ $(MPI_SRC) $(LDFLAGS)
 
 clean:
-	rm -rf $(OBJ_DIR) $(BIN_DIR)
+	@rm -rf $(BIN) $(LOG)/*.txt
+	@echo "CLEAN OK"

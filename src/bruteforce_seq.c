@@ -1,161 +1,131 @@
-// Programa de fuerza bruta secuencial para DES secuencial
+#include "des_utils.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <time.h>
+#include <inttypes.h>
 
-#include "des_compat.h"
-#include "timer.h"
-#include "util.h"
+static inline uint64_t des_effective_key(uint64_t k) {
+    return k & ~0x0101010101010101ULL;
+}
 
-/*
-constantes y funciones de ayuda
-*/
-#define max_buf 4096
-#define block 8
+static void banner(void) {
+    puts("============================================================");
+    puts("  BruteDES • Secuencial");
+    puts("  - Cifra y ataca DES-ECB (OpenSSL EVP)");
+    puts("  - Rango de llaves configurable [L, U)");
+    puts("============================================================\n");
+}
 
-/*
-función de uso y ayuda
-*/
-static void usage(void) {
+static void usage(const char *p) {
+    banner();
     fprintf(stderr,
-        "Uso\n"
-        "----\n"
-        "Herramienta para generar cifrados de prueba o realizar búsqueda por fuerza bruta\n\n"
-
-        "Modos\n"
-        "  Modo prueba (genera un cifrado de ejemplo):\n"
-        "    bruteforce_seq --mode TEST  --plain \"TEXTO\" --key K\n\n"
-
-        "  Modo brute force (búsqueda secuencial en el espacio de claves):\n"
-        "    bruteforce_seq --mode BRUTE --cipher-hex HEX --search \"SUBSTR\" --bits B\n\n"
-
-        "Opciones adicionales\n"
-        "  --start S --end E  Especifica un rango de claves [S..E] como alternativa a --bits.\n"
-
-        "Notas\n"
-        "  - El texto se procesa en bloques de 8 bytes; para la demo se utiliza zero-padding\n"
-        "    cuando un bloque no está completo.\n"
-        "  - Para pruebas de rendimiento, ajuste el parámetro --bits según el alcance deseado.\n"
-    );
+      "USO:\n"
+      "  (CIFRAR)     %s --encrypt   -i <in.txt> -k <key> -o <cipher.bin>\n"
+      "  (BRUTEFORCE) %s --bruteforce -c <cipher.bin> -s \"substring\" [-L low] [-U up)\n"
+      "\nOPCIONES:\n"
+      "  -i texto de entrada   -o salida cifrada   -k llave DES (decimal o 0xHEX)\n"
+      "  -c cifrado a atacar   -s subcadena valida  -L limite inferior  -U superior\n"
+      "NOTA: para 2^56 usa -U 72057594037927936\n", p, p);
 }
 
-// prepara bloques a partir de texto plano
-static size_t prepare_blocks_from_plain(const char *plain, unsigned char *buf, size_t bufmax) {
-    return pad_to_block8((const unsigned char*)plain, strlen(plain), buf, bufmax);
+static uint64_t parse_u64(const char *s) {
+    if (s[0]=='0' && (s[1]=='x'||s[1]=='X')) return strtoull(s, NULL, 16);
+    return strtoull(s, NULL, 10);
 }
 
-// intenta descifrar con la clave dada y busca la subcadena en el resultado
-static int try_key(uint64_t key, const unsigned char *ciph, size_t len, const char *search) {
-    unsigned char tmp[max_buf];
-    if (len > sizeof(tmp)) return 0;
-    des_compat_decrypt(key, ciph, tmp, len);
-    size_t safe = (len < sizeof(tmp)-1) ? len : (sizeof(tmp)-1);
-    tmp[safe] = 0;
-    return contains_substring((const char*)tmp, search);
+static double now_secs(void) {
+    struct timespec ts; clock_gettime(CLOCK_MONOTONIC, &ts);
+    return ts.tv_sec + ts.tv_nsec * 1e-9;
 }
 
-// main del programa de fuerza bruta secuencial
 int main(int argc, char **argv) {
-    const char *mode = NULL;
-    const char *plain = NULL;
-    const char *search = NULL;
-    const char *hex = NULL;
-    uint64_t key = 0;
-    int have_key = 0;
-    int have_bits = 0;
-    unsigned bits = 0;
-    uint64_t start = 0, end = 0;
-    int have_range = 0;
+    int do_encrypt = 0, do_attack = 0;
+    const char *in_txt=NULL, *out_bin=NULL, *cipher_path=NULL, *needle=NULL;
+    uint64_t key=0, L=0, U=(1ULL<<24);
 
-    // for para iterar argumentos
-    for (int i = 1; i < argc; ++i) {
-        if      (!strcmp(argv[i], "--mode") && i+1 < argc) mode = argv[++i];
-        else if (!strcmp(argv[i], "--plain") && i+1 < argc) plain = argv[++i];
-        else if (!strcmp(argv[i], "--key")   && i+1 < argc) { key = strtoull(argv[++i], NULL, 0); have_key = 1; }
-        else if (!strcmp(argv[i], "--cipher-hex") && i+1 < argc) hex = argv[++i];
-        else if (!strcmp(argv[i], "--search") && i+1 < argc) search = argv[++i];
-        else if (!strcmp(argv[i], "--bits") && i+1 < argc) { bits = (unsigned)strtoul(argv[++i], NULL, 0); have_bits = 1; }
-        else if (!strcmp(argv[i], "--start") && i+1 < argc) { start = strtoull(argv[++i], NULL, 0); have_range = 1; }
-        else if (!strcmp(argv[i], "--end")   && i+1 < argc) { end   = strtoull(argv[++i], NULL, 0); have_range = 1; }
-        else { usage(); return 1; }
+    for (int i=1; i<argc; ++i) {
+        if (!strcmp(argv[i], "--encrypt")) do_encrypt = 1;
+        else if (!strcmp(argv[i], "--bruteforce")) do_attack = 1;
+        else if (!strcmp(argv[i], "-i") && i+1<argc) in_txt = argv[++i];
+        else if (!strcmp(argv[i], "-o") && i+1<argc) out_bin = argv[++i];
+        else if (!strcmp(argv[i], "-k") && i+1<argc) key = parse_u64(argv[++i]);
+        else if (!strcmp(argv[i], "-c") && i+1<argc) cipher_path = argv[++i];
+        else if (!strcmp(argv[i], "-s") && i+1<argc) needle = argv[++i];
+        else if (!strcmp(argv[i], "-L") && i+1<argc) L = parse_u64(argv[++i]);
+        else if (!strcmp(argv[i], "-U") && i+1<argc) U = parse_u64(argv[++i]);
+        else { usage(argv[0]); return 1; }
     }
 
-    if (!mode) { usage(); return 1; }
+    if (do_encrypt) {
+        if (!in_txt || !out_bin) { usage(argv[0]); return 1; }
+        banner();
+        unsigned char *plain=NULL, *padded=NULL, *cipher=NULL;
+        size_t plen=0, blen=0;
 
-    // si es modo test se corre la demo
-    if (!strcmp(mode, "TEST")) {
-        if (!plain || !have_key) { usage(); return 1; }
-        unsigned char pbuf[max_buf], cbuf[max_buf], dbuf[max_buf];
-        size_t blen = prepare_blocks_from_plain(plain, pbuf, sizeof(pbuf));
-        if (!blen) { fprintf(stderr, "ERROR: PADDING\n"); return 1; }
+        if (read_whole_file(in_txt, &plain, &plen) != 0) {
+            fprintf(stderr, "ERROR: no se pudo leer %s\n", in_txt); return 2;
+        }
+        blen = pad_zeros_alloc(plain, plen, &padded);
+        cipher = (unsigned char*)malloc(blen);
+        if (!cipher) { free(plain); free(padded); return 3; }
 
-        des_compat_encrypt(key, pbuf, cbuf, blen);
-        printf("[TEST] KEY=%llu\n", (unsigned long long)key);
-        printf("[TEST] PLAIN_LEN=%zu  CIPH_LEN=%zu\n", strlen(plain), blen);
-        printf("[TEST] CIPH_HEX="); print_hex(cbuf, blen);
+        des_encrypt_buffer(key, padded, blen, cipher);
 
-        des_compat_decrypt(key, cbuf, dbuf, blen);
-        dbuf[blen < sizeof(dbuf)-1 ? blen : sizeof(dbuf)-1] = 0;
-        printf("[TEST] DEC(HEX)=\"%s\"\n", (char*)dbuf);
+        if (write_whole_file(out_bin, cipher, blen) != 0) {
+            fprintf(stderr, "ERROR: no se pudo escribir %s\n", out_bin);
+        } else {
+            uint64_t eff = des_effective_key(key);
+            printf("✔ Cifrado generado\n");
+            printf("  • Entrada : %s (bytes=%zu)\n", in_txt, plen);
+            printf("  • Salida  : %s (bytes=%zu, padded x8)\n", out_bin, blen);
+            printf("  • Llave   : %" PRIu64 " (efectiva dec=%" PRIu64 ", hex=0x%016" PRIx64 ")\n",
+                   key, eff, eff);
+        }
+        free(plain); free(padded); free(cipher);
         return 0;
     }
 
-    // si es modo brute se corre la búsqueda
-    if (!strcmp(mode, "BRUTE")) {
-        if ((!hex || !search) || (!have_bits && !have_range)) { usage(); return 1; }
-
-        unsigned char ciph[max_buf];
-        long nbytes = hex_to_bytes(hex, ciph, sizeof(ciph));
-        if (nbytes <= 0 || (nbytes % block) != 0) {
-            fprintf(stderr, "ERROR: CIPHER_HEX INVALIDO O LONGITUD NO MULTIPLO DE 8.\n");
-            return 1;
+    if (do_attack) {
+        if (!cipher_path || !needle) { usage(argv[0]); return 1; }
+        banner();
+        unsigned char *cipher=NULL; size_t clen=0;
+        if (read_whole_file(cipher_path, &cipher, &clen) != 0) {
+            fprintf(stderr, "ERROR: no se pudo leer %s\n", cipher_path); return 2;
         }
-        size_t clen = (size_t)nbytes;
 
-        uint64_t l = 0, u = 0;
-        if (have_bits) {
-            if (bits >= 56) { u = (1ULL<<56) - 1ULL; }
-            else             u = (1ULL<<bits) - 1ULL;
-            l = 0;
+        printf("→ BRUTEFORCE SECUENCIAL\n");
+        printf("  • Archivo  : %s (bytes=%zu)\n", cipher_path, clen);
+        printf("  • Subcadena: \"%s\"\n", needle);
+        printf("  • Rango    : [%" PRIu64 ", %" PRIu64 ")\n", L, U);
+
+        double t0 = now_secs();
+        uint64_t found = UINT64_MAX;
+
+        for (uint64_t k=L; k<U; ++k) {
+            if (des_try_key(k, cipher, clen, needle)) { found = k; break; }
+        }
+
+        double t1 = now_secs();
+        if (found != UINT64_MAX) {
+            unsigned char *plain = (unsigned char*)malloc(clen+1);
+            des_decrypt_buffer(found, cipher, clen, plain);
+            plain[clen] = 0;
+            uint64_t eff = des_effective_key(found);
+            puts("  • Resultado: ✔ Llave encontrada");
+            printf("    - Llave   : %" PRIu64 " (efectiva dec=%" PRIu64 ", hex=0x%016" PRIx64 ")\n",
+                   found, eff, eff);
+            printf("    - Texto   : %s\n", plain);
+            free(plain);
         } else {
-            l = start;
-            u = end;
-            if (u < l) { fprintf(stderr, "ERROR: RANGO INVALIDO.\n"); return 1; }
+            puts("  • Resultado: ✘ No encontrada en el rango");
         }
-
-        timer_mono_t t; timer_start(&t);
-
-        uint64_t found = 0;
-        int ok = 0;
-        for (uint64_t k = l; k <= u; ++k) {
-            if (try_key(k, ciph, clen, search)) { found = k; ok = 1; break; }
-            if (k == u) break; 
-        }
-
-        // se para el timer
-        timer_stop(&t);
-        double sec = timer_seconds(&t);
-
-        // si se encontró, se descifra y muestra el texto
-        if (ok) {
-            unsigned char dec[max_buf];
-            des_compat_decrypt(found, ciph, dec, clen);
-            dec[(clen < sizeof(dec)-1) ? clen : sizeof(dec)-1] = 0;
-
-            printf("[BRUTE] ENCONTRADA=1 KEY=%llu\n", (unsigned long long)found);
-            printf("[BRUTE] TIEMPO=%.6f s RANGO=[%llu..%llu] ITER=%llu\n",
-                   sec, (unsigned long long)l, (unsigned long long)u,
-                   (unsigned long long)(found - l + 1));
-            printf("[BRUTE] TEXTO=\"%s\"\n", (char*)dec);
-        } else {
-            printf("[BRUTE] ENCONTRADA=0 TIEMPO=%.6f s RANGO=[%llu..%llu]\n",
-                   sec, (unsigned long long)l, (unsigned long long)u);
-        }
+        printf("  • Tiempo   : %.6f s\n", t1 - t0);
+        free(cipher);
         return 0;
     }
 
-    // si no es ninguno de los modos conocidos, se muestra ayuda
-    usage();
+    usage(argv[0]);
     return 1;
 }

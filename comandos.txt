@@ -1,69 +1,26 @@
 #######################
 REQUISITOS WSL:
-sudo apt install -y build-essential make gcc libssl-dev
-
+sudo apt-get update
+sudo apt-get install -y build-essential libssl-dev openmpi-bin libopenmpi-dev
 
 #######################
 # Parte A paso 3
-
-export LANG=C.UTF-8
-export LC_ALL=C.UTF-8
-PLAIN="hola andré cómo estás"
-
-B=22
-KEY=$(( (1<<B) - 1 ))
-CIPH=$(./bin/bruteforce_seq --mode TEST --plain "$PLAIN" --key "$KEY" | sed -n 's/^\[TEST] CIPH_HEX=//p')
-./bin/bruteforce_seq --mode BRUTE --cipher-hex "$CIPH" --search "andré" --bits $B
-
-# WORST: pone la clave al findal del rango empieza en 0 y va subiendo s etiene que recorrer todo el espacio de claves
-
-OUTCSV="tests/seq_hola_andre_worst.csv"
-echo "scenario,bits,key,iter,time_s" > "$OUTCSV"
-
-for B in 18 20 22 24; do
-  KEY=$(( (1<<B) - 1 ))
-  CIPH=$(./bin/bruteforce_seq --mode TEST --plain "$PLAIN" --key "$KEY" | sed -n 's/^\[TEST] CIPH_HEX=//p')
-
-  OUT=$(./bin/bruteforce_seq --mode BRUTE --cipher-hex "$CIPH" --search "andré" --bits $B)
-
-  # EXTRAEMOS DE LA SEGUNDA LINEA: "[BRUTE] TIEMPO=... s ... ITER=..."
-  LINE=$(printf "%s\n" "$OUT" | grep '^\[BRUTE] TIEMPO=')
-  T=$(printf "%s\n" "$LINE" | sed -n 's/^\[BRUTE] TIEMPO=\([0-9.]\+\) s .*$/\1/p')
-  I=$(printf "%s\n" "$LINE" | sed -n 's/^.* ITER=\([0-9]\+\)$/\1/p')
-
-  echo "WORST,$B,$KEY,${I:-NA},${T:-NA}" >> "$OUTCSV"
-done
-
-column -s, -t "$OUTCSV"
-
-# AVG: se pone a la mitad del rango, busqueda lineal desde 0
-
-OUTCSV2="tests/seq_hola_andre_avg.csv"
-echo "scenario,bits,key,iter,time_s" > "$OUTCSV2"
-
-for B in 18 20 22 24; do
-  KEY=$(( 1<<(B-1) ))
-  CIPH=$(./bin/bruteforce_seq --mode TEST --plain "$PLAIN" --key "$KEY" | sed -n 's/^\[TEST] CIPH_HEX=//p')
-
-  OUT=$(./bin/bruteforce_seq --mode BRUTE --cipher-hex "$CIPH" --search "andré" --bits $B)
-
-  LINE=$(printf "%s\n" "$OUT" | grep '^\[BRUTE] TIEMPO=')
-  T=$(printf "%s\n" "$LINE" | sed -n 's/^\[BRUTE] TIEMPO=\([0-9.]\+\) s .*$/\1/p')
-  I=$(printf "%s\n" "$LINE" | sed -n 's/^.* ITER=\([0-9]\+\)$/\1/p')
-
-  echo "AVG,$B,$KEY,${I:-NA},${T:-NA}" >> "$OUTCSV2"
-done
-
-column -s, -t "$OUTCSV2"
+chmod +x scripts/run_seq_sweep.sh
+./scripts/run_seq_sweep.sh
 
 ##############################
 # Parte A paso 4
 
-mpirun -n 4 ./bin/bruteforce_mpi
+mpicc -std=c11 -O3 -Wall -Wextra -pedantic src/bruteforce.c -lcrypto -o bin/bruteforce_orig
+mpirun -np 4 ./bin/bruteforce_orig -s "the" -L 0 -U 16777216
 
 ##############################
 # Parte B paso 1 
 
-./bin/file_crypto --mode enc --in data/sample_plain.txt --out data/sample_cipher.hex --key 42
-./bin/file_crypto --mode dec --in data/sample_cipher.hex --out data/sample_decrypted.txt --key 42
+Cifrar
+./bin/bruteforce_seq --encrypt -i data/mensaje.txt -k 123456 -o data/cipher.bin
 
+Secuencial
+./bin/bruteforce_seq --bruteforce -c data/cipher.bin -s "me llamo" -L 0 -U 16777216
+
+mpirun -np 4 ./bin/bruteforce_mpi -c data/cipher.bin -s "me llamo" -L 0 -U 16777216
