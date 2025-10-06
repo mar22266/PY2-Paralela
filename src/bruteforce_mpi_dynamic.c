@@ -1,0 +1,162 @@
+#include "des_utils.h"
+#include <mpi.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdint.h>
+#include <inttypes.h>
+
+enum { TAG_REQ=100, TAG_TASK=101, TAG_STOP=102, TAG_FOUND=103 };
+
+static uint64_t parse_u64(const char *s){ return (s[0]=='0'&&(s[1]=='x'||s[1]=='X'))? strtoull(s,NULL,16): strtoull(s,NULL,10); }
+static inline uint64_t min_u64(uint64_t a,uint64_t b){ return a<b?a:b; }
+static inline uint64_t des_effective_key(uint64_t k){ return k & ~0x0101010101010101ULL; }
+
+static void banner(void){
+    puts("============================================================");
+    puts("  BruteDES • MPI (master–worker dinámico)");
+    puts("  - Asignación por chunks, balance activo, early-stop");
+    puts("============================================================\n");
+}
+static void usage(const char *p){
+    banner();
+    fprintf(stderr,"USO:\n  mpirun -np <P> %s -c <cipher.bin> -s \"substring\" [-L low] [-U up) [-B chunk]\n",p);
+}
+
+int main(int argc,char**argv){
+    const char *cipher_path=NULL,*needle=NULL; uint64_t L=0,U=(1ULL<<24); uint64_t B=1000000ULL;
+    for(int i=1;i<argc;i++){
+        if(!strcmp(argv[i],"-c")&&i+1<argc) cipher_path=argv[++i];
+        else if(!strcmp(argv[i],"-s")&&i+1<argc) needle=argv[++i];
+        else if(!strcmp(argv[i],"-L")&&i+1<argc) L=parse_u64(argv[++i]);
+        else if(!strcmp(argv[i],"-U")&&i+1<argc) U=parse_u64(argv[++i]);
+        else if(!strcmp(argv[i],"-B")&&i+1<argc) B=parse_u64(argv[++i]);
+        else if(!strcmp(argv[i],"-h")){ usage(argv[0]); return 0; }
+    }
+    if(!cipher_path||!needle){ usage(argv[0]); return 1; }
+
+    MPI_Init(&argc,&argv);
+    MPI_Comm comm=MPI_COMM_WORLD; int P,id; MPI_Comm_size(comm,&P); MPI_Comm_rank(comm,&id);
+    if(id==0) banner();
+
+    unsigned char *cipher=NULL; size_t clen=0; int nlen=0;
+    if(id==0){ if(read_whole_file(cipher_path,&cipher,&clen)!=0){ fprintf(stderr,"ERROR leyendo %s\n",cipher_path); MPI_Abort(comm,2);} nlen=(int)strlen(needle); }
+    unsigned long long clen_ull=(id==0)?(unsigned long long)clen:0ULL;
+    MPI_Bcast(&clen_ull,1,MPI_UNSIGNED_LONG_LONG,0,comm); clen=(size_t)clen_ull;
+    if(id!=0) cipher=(unsigned char*)malloc(clen);
+    MPI_Bcast(cipher,(int)clen,MPI_BYTE,0,comm);
+    MPI_Bcast(&nlen,1,MPI_INT,0,comm);
+    char *needle_b=(char*)malloc(nlen+1);
+    if(id==0){ memcpy(needle_b,needle,nlen+1); }
+    MPI_Bcast(needle_b,nlen+1,MPI_CHAR,0,comm);
+
+    MPI_Bcast(&L,1,MPI_UINT64_T,0,comm);
+    MPI_Bcast(&U,1,MPI_UINT64_T,0,comm);
+    MPI_Bcast(&B,1,MPI_UINT64_T,0,comm);
+
+    uint64_t found=UINT64_MAX; int who_found=-1;
+
+    uint64_t local_tests = 0;    
+    double t0=MPI_Wtime();
+
+    if(id==0){
+        uint64_t next=L;
+        int active_workers=P-1;
+        MPI_Status st;
+
+        while(active_workers>0){
+            int flag=0; MPI_Iprobe(MPI_ANY_SOURCE,TAG_FOUND,comm,&flag,&st);
+            if(flag){
+                MPI_Recv(&found,1,MPI_UINT64_T,st.MPI_SOURCE,TAG_FOUND,comm,&st);
+                who_found=st.MPI_SOURCE;
+                for(int w=1; w<P; ++w){
+                    int f2=0; MPI_Iprobe(w,TAG_REQ,comm,&f2,&st);
+                    if(f2){
+                        uint64_t junk; MPI_Recv(&junk,1,MPI_UINT64_T,w,TAG_REQ,comm,&st);
+                        MPI_Send(&found,1,MPI_UINT64_T,w,TAG_STOP,comm);
+                    }
+                }
+                break;
+            }
+            MPI_Probe(MPI_ANY_SOURCE,TAG_REQ,comm,&st);
+            int src=st.MPI_SOURCE; uint64_t dummy; MPI_Recv(&dummy,1,MPI_UINT64_T,src,TAG_REQ,comm,&st);
+            if(found!=UINT64_MAX){ MPI_Send(&found,1,MPI_UINT64_T,src,TAG_STOP,comm); continue; }
+            if(next>=U){ uint64_t msg=0; MPI_Send(&msg,1,MPI_UINT64_T,src,TAG_STOP,comm); active_workers--; continue; }
+            uint64_t a=next, b=min_u64(next+B,U); next=b;
+            uint64_t task[2]={a,b}; MPI_Send(task,2,MPI_UINT64_T,src,TAG_TASK,comm);
+        }
+        for(int w=1; w<P; ++w){
+            int f2=0; MPI_Iprobe(w,TAG_REQ,comm,&f2,&st);
+            if(f2){ uint64_t d; MPI_Recv(&d,1,MPI_UINT64_T,w,TAG_REQ,comm,&st); }
+            MPI_Send(&found,1,MPI_UINT64_T,w,TAG_STOP,comm);
+        }
+    } else {
+        MPI_Status st;
+        for(;;){
+            uint64_t req=1; MPI_Send(&req,1,MPI_UINT64_T,0,TAG_REQ,comm);
+            MPI_Probe(0,MPI_ANY_TAG,comm,&st);
+            if(st.MPI_TAG==TAG_TASK){
+                uint64_t task[2]; MPI_Recv(task,2,MPI_UINT64_T,0,TAG_TASK,comm,&st);
+                uint64_t a=task[0], b=task[1];
+                for(uint64_t k=a;k<b;k++){
+                    local_tests++;                              
+                    if(des_try_key(k,cipher,clen,needle_b)){
+                        found=k; MPI_Send(&found,1,MPI_UINT64_T,0,TAG_FOUND,comm);
+                        goto done;
+                    }
+                    int flag=0; MPI_Iprobe(0,TAG_STOP,comm,&flag,&st);
+                    if(flag){ MPI_Recv(&found,1,MPI_UINT64_T,0,TAG_STOP,comm,&st); goto done; }
+                }
+            } else if(st.MPI_TAG==TAG_STOP){
+                MPI_Recv(&found,1,MPI_UINT64_T,0,TAG_STOP,comm,&st);
+                break;
+            }
+        }
+    done:
+        ; 
+    }
+
+    double t1=MPI_Wtime();
+    double local_time = t1 - t0;
+
+    double *times_all=NULL; uint64_t *tests_all=NULL;
+    if(id==0){ times_all=(double*)malloc(sizeof(double)*P); tests_all=(uint64_t*)malloc(sizeof(uint64_t)*P); }
+    MPI_Gather(&local_time,1,MPI_DOUBLE,times_all,1,MPI_DOUBLE,0,comm);
+    MPI_Gather(&local_tests,1,MPI_UINT64_T,tests_all,1,MPI_UINT64_T,0,comm);
+
+    if(id==0){
+        printf("→ BRUTEFORCE MPI (dinámico)\n");
+        printf("  • Procesos : %d\n", P);
+        printf("  • Chunk(B) : %" PRIu64 "\n", B);
+        printf("  • Rango    : [%" PRIu64 ", %" PRIu64 ")\n", L, U);
+
+        puts("\n  • Detalle por proceso");
+        puts("    RANK |   TESTS     |  TIME(s)");
+        puts("    -----+-------------+---------");
+        double tmax=0.0; for(int r=0;r<P;r++){ 
+            printf("    %4d | %11" PRIu64 " | %7.4f\n", r, tests_all[r], times_all[r]);
+            if(times_all[r]>tmax) tmax=times_all[r];
+        }
+
+        if(found!=UINT64_MAX){
+            unsigned char *plain=(unsigned char*)malloc(clen+1);
+            des_decrypt_buffer(found,cipher,clen,plain); plain[clen]=0;
+            uint64_t eff=des_effective_key(found);
+            puts("\n  • Resultado: ✔ Llave encontrada");
+            printf("    - Rank    : %d\n", who_found);
+            printf("    - Llave   : %" PRIu64 " (efectiva=%" PRIu64 ", 0x%016" PRIx64 ")\n", found, eff, eff);
+            printf("    - Texto   : %s\n", plain);
+            free(plain);
+        } else {
+            puts("\n  • Resultado: ✘ No encontrada");
+        }
+
+        puts("\n  • Resumen global");
+        printf("    - Tiempo total (max rank)  : %.6f s\n", tmax);
+
+        free(times_all); free(tests_all);
+    }
+
+    free(cipher); free(needle_b);
+    MPI_Barrier(comm); MPI_Finalize(); return 0;
+}

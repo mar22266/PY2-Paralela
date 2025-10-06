@@ -31,3 +31,16 @@ Secuencial
 
 paralelo
 mpirun -np 4 ./bin/bruteforce_mpi -c data/cipher.bin -s "me llamo" -L 0 -U 16777216
+
+
+Compilar y correr nuevos algoritmos:
+dinamico:
+mpicc -std=c11 -O3 -Wall -Wextra -pedantic -Iinclude \
+  src/bruteforce_mpi_dynamic.c src/des_utils.c -lcrypto -o bin/bruteforce_mpi_dynamic
+ciclico:
+mpicc -std=c11 -O3 -Wall -Wextra -pedantic -Iinclude \
+  src/bruteforce_mpi_cyclic.c  src/des_utils.c -lcrypto -o bin/bruteforce_mpi_cyclic
+
+correrlos:
+mpirun -np 4 ./bin/bruteforce_mpi_dynamic -c data/cipher.bin -s "es una prueba de" -L 0 -U 16777216 -B 500000
+mpirun -np 4 ./bin/bruteforce_mpi_cyclic  -c data/cipher.bin -s "es una prueba de" -L 0 -U 16777216
