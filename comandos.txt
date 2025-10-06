@@ -41,6 +41,26 @@ ciclico:
 mpicc -std=c11 -O3 -Wall -Wextra -pedantic -Iinclude \
   src/bruteforce_mpi_cyclic.c  src/des_utils.c -lcrypto -o bin/bruteforce_mpi_cyclic
 
+permutado:
+mpicc -std=c11 -O3 -Wall -Wextra -Wshadow -Wpedantic -Iinclude \
+  src/bruteforce_mpi_permuted.c src/des_utils.c -lcrypto \
+  -o bin/bruteforce_mpi_permuted
+
+dinamico adaptivo:
+mpicc -std=c11 -O3 -Wall -Wextra -Wshadow -Wpedantic -Iinclude \
+  src/bruteforce_mpi_dynamic_adaptive.c src/des_utils.c -lcrypto \
+  -o bin/bruteforce_mpi_dynamic_adaptive
+
 correrlos:
 mpirun -np 4 ./bin/bruteforce_mpi_dynamic -c data/cipher.bin -s "es una prueba de" -L 0 -U 16777216 -B 500000
 mpirun -np 4 ./bin/bruteforce_mpi_cyclic  -c data/cipher.bin -s "es una prueba de" -L 0 -U 16777216
+
+mpirun -np 4 ./bin/bruteforce_mpi_permuted \
+  -c data/cipher.bin -s "es una prueba de" -L 0 -U 16777216 -R 12345
+
+mpirun -np 4 ./bin/bruteforce_mpi_dynamic_adaptive \
+  -c data/cipher.bin -s "es una prueba de" -L 0 -U 16777216 -T 30
+
+
+CASOS DE PRUEBA CALCULOS EXCEL:
+MODE=full ./scripts/bench_all.sh
