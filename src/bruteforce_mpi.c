@@ -1,3 +1,4 @@
+//importacion de libs
 #include "des_utils.h"
 #include <mpi.h>
 #include <stdio.h>
@@ -6,15 +7,18 @@
 #include <stdint.h>
 #include <inttypes.h>
 
+// calcula llave efectiva des removiendo bits de paridad
 static inline uint64_t des_effective_key(uint64_t k) {
     return k & ~0x0101010101010101ULL;
 }
 
+// convierte cadena a entero de 64 bits en base 16 o 10
 static uint64_t parse_u64(const char *s) {
     if (s[0]=='0' && (s[1]=='x'||s[1]=='X')) return strtoull(s, NULL, 16);
     return strtoull(s, NULL, 10);
 }
 
+// imprime banner informativo del programa
 static void banner(void) {
     puts("============================================================");
     puts("  BruteDES • MPI");
@@ -22,6 +26,7 @@ static void banner(void) {
     puts("============================================================\n");
 }
 
+// imprime uso del programa para ejecucion con mpi
 static void usage0(const char *p) {
     banner();
     fprintf(stderr,
@@ -33,6 +38,8 @@ static void usage0(const char *p) {
 }
 
 int main(int argc, char **argv) {
+
+    // parseo de argumentos y rangos por defecto
     const char *cipher_path=NULL, *needle=NULL;
     uint64_t L=0, U=(1ULL<<24);
 
@@ -43,8 +50,10 @@ int main(int argc, char **argv) {
         else if (!strcmp(argv[i], "-U") && i+1<argc) U = parse_u64(argv[++i]);
         else if (!strcmp(argv[i], "-h")) { usage0(argv[0]); return 0; }
     }
+    // valida presencia de archivo cifrado y subcadena objetivo
     if (!cipher_path || !needle) { usage0(argv[0]); return 1; }
 
+    // inicializa mpi y obtiene numero de procesos y rank
     MPI_Init(&argc, &argv);
     MPI_Comm comm = MPI_COMM_WORLD;
     int P=0, id=0;
@@ -53,6 +62,7 @@ int main(int argc, char **argv) {
 
     if (id==0) banner();
 
+    // lectura del archivo cifrado en rank cero y difusion a todos
     unsigned char *cipher=NULL; size_t clen=0;
     int nlen = (int)strlen(needle);
 
@@ -63,6 +73,7 @@ int main(int argc, char **argv) {
         }
     }
 
+    // difunde longitud del cifrado y buffer a todos los procesos
     unsigned long long clen_ull = (id==0) ? (unsigned long long)clen : 0ULL;
     MPI_Bcast(&clen_ull, 1, MPI_UNSIGNED_LONG_LONG, 0, comm);
     clen = (size_t)clen_ull;
@@ -70,30 +81,36 @@ int main(int argc, char **argv) {
     if (id != 0) cipher = (unsigned char*)malloc(clen);
     MPI_Bcast(cipher, (int)clen, MPI_BYTE, 0, comm);
 
+    // difunde longitud y contenido de la aguja a buscar
     MPI_Bcast(&nlen, 1, MPI_INT, 0, comm);
     char *needle_b = (char*)malloc(nlen+1);
     if (id==0) memcpy(needle_b, needle, nlen+1);
     MPI_Bcast(needle_b, nlen+1, MPI_CHAR, 0, comm);
 
+    // divide el rango total en porciones equitativas por proceso
     uint64_t total = (U > L) ? (U - L) : 0;
     uint64_t per   = total / (uint64_t)P;
     uint64_t extra = total % (uint64_t)P;
 
+    // calcula subrango asignado a este rank con reparto justo
     uint64_t uid = (uint64_t)id;
     uint64_t add = (uid < extra) ? uid : extra;
     uint64_t myL = L + per*uid + add;
     uint64_t myU = myL + per + (uid < extra);
 
+    // prepara estado local y recepcion no bloqueante de llave encontrada
     uint64_t found = UINT64_MAX;
     uint64_t local_tests = 0;
-    int status_code = 0; /* 0=agotó rango, 1=detenido por señal, 2=encontró */
+    int status_code = 0; 
     int found_rank = -1;
 
     MPI_Request req; MPI_Status st;
     MPI_Irecv(&found, 1, MPI_UINT64_T, MPI_ANY_SOURCE, 777, comm, &req);
 
+    // inicia cronometro
     double t0 = MPI_Wtime();
 
+    // recorre llaves de su subrango con early stop
     for (uint64_t k=myL; k<myU; ++k) {
         int flag=0;
         MPI_Test(&req, &flag, &st);
@@ -109,6 +126,7 @@ int main(int argc, char **argv) {
         }
     }
 
+    // detiene cronometro y cierra recepcion pendiente si aplica
     double t1 = MPI_Wtime();
     double local_time = t1 - t0;
 
@@ -116,6 +134,7 @@ int main(int argc, char **argv) {
     MPI_Test(&req, &completed, &st);
     if (!completed) { MPI_Cancel(&req); MPI_Wait(&req, &st); }
 
+    // reserva buffers en maestro para recopilar metricas globales
     double *times_all = NULL;
     uint64_t *tests_all = NULL, *L_all = NULL, *U_all = NULL;
     int *status_all = NULL, *rank_found_all = NULL;
@@ -129,6 +148,7 @@ int main(int argc, char **argv) {
         rank_found_all = (int*)  malloc(sizeof(int)*P);
     }
 
+    // envia metricas locales al rank cero
     MPI_Gather(&local_time, 1, MPI_DOUBLE,   times_all, 1, MPI_DOUBLE,   0, comm);
     MPI_Gather(&local_tests,1, MPI_UINT64_T, tests_all, 1, MPI_UINT64_T, 0, comm);
     MPI_Gather(&myL,        1, MPI_UINT64_T, L_all,     1, MPI_UINT64_T, 0, comm);
@@ -136,6 +156,7 @@ int main(int argc, char **argv) {
     MPI_Gather(&status_code,1, MPI_INT,      status_all,1, MPI_INT,      0, comm);
     MPI_Gather(&found_rank, 1, MPI_INT,      rank_found_all,1, MPI_INT,  0, comm);
 
+    // imprime resultados y resumen global en el rank cero
     if (id==0) {
         printf("→ BRUTEFORCE MPI\n");
         printf("  • Procesos : %d\n", P);
@@ -184,6 +205,7 @@ int main(int argc, char **argv) {
         puts("");
     }
 
+    // libera memoria y cierra mpi
     free(cipher);
     free(needle_b);
     if (id==0) { free(times_all); free(tests_all); free(L_all); free(U_all); free(status_all); free(rank_found_all); }

@@ -21,7 +21,7 @@ if [[ ! -f "$TEXT" ]]; then
   echo -n "Esta es una prueba de proyecto 2" > "$TEXT"
 fi
 
-declare -a U_LIST=(1048576 4194304 16777216 67108864 268435456)   # 2^20..2^28
+declare -a U_LIST=(1048576 4194304 16777216 67108864 268435456)   
 declare -a K_LIST=(524288 3000000 9000000 40000000 150000000)
 
 CSV="$LOGS/seq_sweep.csv"

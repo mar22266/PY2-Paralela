@@ -1,3 +1,4 @@
+// importacion de librerias
 #include "des_utils.h"
 #include <mpi.h>
 #include <stdio.h>
@@ -6,24 +7,31 @@
 #include <stdint.h>
 #include <inttypes.h>
 
+// define tags de mensajes para maestro y workers
 enum { TAG_REQ=100, TAG_TASK=101, TAG_STOP=102, TAG_FOUND=103 };
 
+// convierte cadena a entero de 64 bits en hex o decimal
 static uint64_t parse_u64(const char *s){ return (s[0]=='0'&&(s[1]=='x'||s[1]=='X'))? strtoull(s,NULL,16): strtoull(s,NULL,10); }
+// devuelve el minimo entre dos enteros de 64 bits
 static inline uint64_t min_u64(uint64_t a,uint64_t b){ return a<b?a:b; }
+// elimina bits de paridad des para obtener llave efectiva
 static inline uint64_t des_effective_key(uint64_t k){ return k & ~0x0101010101010101ULL; }
 
+// imprime banner informativo del programa
 static void banner(void){
     puts("============================================================");
     puts("  BruteDES • MPI (master–worker dinámico)");
     puts("  - Asignación por chunks, balance activo, early-stop");
     puts("============================================================\n");
 }
+// imprime instrucciones de uso en consola
 static void usage(const char *p){
     banner();
     fprintf(stderr,"USO:\n  mpirun -np <P> %s -c <cipher.bin> -s \"substring\" [-L low] [-U up) [-B chunk]\n",p);
 }
 
 int main(int argc,char**argv){
+    // inicializa parametros de entrada y valores por defecto
     const char *cipher_path=NULL,*needle=NULL; uint64_t L=0,U=(1ULL<<24); uint64_t B=1000000ULL;
     for(int i=1;i<argc;i++){
         if(!strcmp(argv[i],"-c")&&i+1<argc) cipher_path=argv[++i];
@@ -33,37 +41,48 @@ int main(int argc,char**argv){
         else if(!strcmp(argv[i],"-B")&&i+1<argc) B=parse_u64(argv[++i]);
         else if(!strcmp(argv[i],"-h")){ usage(argv[0]); return 0; }
     }
+    // valida que existan ruta de cifrado y subcadena
     if(!cipher_path||!needle){ usage(argv[0]); return 1; }
 
+    // inicia mpi y obtiene cantidad de procesos y rank
     MPI_Init(&argc,&argv);
     MPI_Comm comm=MPI_COMM_WORLD; int P,id; MPI_Comm_size(comm,&P); MPI_Comm_rank(comm,&id);
     if(id==0) banner();
 
+    // rank cero lee archivo cifrado y longitud de la aguja
     unsigned char *cipher=NULL; size_t clen=0; int nlen=0;
     if(id==0){ if(read_whole_file(cipher_path,&cipher,&clen)!=0){ fprintf(stderr,"ERROR leyendo %s\n",cipher_path); MPI_Abort(comm,2);} nlen=(int)strlen(needle); }
+    // difunde longitud del cifrado a todos los procesos
     unsigned long long clen_ull=(id==0)?(unsigned long long)clen:0ULL;
     MPI_Bcast(&clen_ull,1,MPI_UNSIGNED_LONG_LONG,0,comm); clen=(size_t)clen_ull;
+    // reserva memoria del cifrado en workers y difunde bytes
     if(id!=0) cipher=(unsigned char*)malloc(clen);
     MPI_Bcast(cipher,(int)clen,MPI_BYTE,0,comm);
+    // difunde longitud y contenido de la aguja
     MPI_Bcast(&nlen,1,MPI_INT,0,comm);
     char *needle_b=(char*)malloc(nlen+1);
     if(id==0){ memcpy(needle_b,needle,nlen+1); }
     MPI_Bcast(needle_b,nlen+1,MPI_CHAR,0,comm);
 
+    // difunde limites del rango y tamano de chunk
     MPI_Bcast(&L,1,MPI_UINT64_T,0,comm);
     MPI_Bcast(&U,1,MPI_UINT64_T,0,comm);
     MPI_Bcast(&B,1,MPI_UINT64_T,0,comm);
 
+    // variables compartidas para resultado y rank ganador
     uint64_t found=UINT64_MAX; int who_found=-1;
 
+    // contadores
     uint64_t local_tests = 0;    
     double t0=MPI_Wtime();
 
+    // bloque maestro asigna chunks y maneja early stop
     if(id==0){
         uint64_t next=L;
         int active_workers=P-1;
         MPI_Status st;
 
+        // bucle central del maestro para atender solicitudes y hallazgos
         while(active_workers>0){
             int flag=0; MPI_Iprobe(MPI_ANY_SOURCE,TAG_FOUND,comm,&flag,&st);
             if(flag){
@@ -85,11 +104,13 @@ int main(int argc,char**argv){
             uint64_t a=next, b=min_u64(next+B,U); next=b;
             uint64_t task[2]={a,b}; MPI_Send(task,2,MPI_UINT64_T,src,TAG_TASK,comm);
         }
+        // envia señales de parada a todos los workers restantes
         for(int w=1; w<P; ++w){
             int f2=0; MPI_Iprobe(w,TAG_REQ,comm,&f2,&st);
             if(f2){ uint64_t d; MPI_Recv(&d,1,MPI_UINT64_T,w,TAG_REQ,comm,&st); }
             MPI_Send(&found,1,MPI_UINT64_T,w,TAG_STOP,comm);
         }
+        // bloque worker solicita tareas y prueba llaves
     } else {
         MPI_Status st;
         for(;;){
@@ -116,14 +137,17 @@ int main(int argc,char**argv){
         ; 
     }
 
+    //calcula tiempo de ejecucion
     double t1=MPI_Wtime();
     double local_time = t1 - t0;
 
+    // recopila tiempos y tests en el maestro
     double *times_all=NULL; uint64_t *tests_all=NULL;
     if(id==0){ times_all=(double*)malloc(sizeof(double)*P); tests_all=(uint64_t*)malloc(sizeof(uint64_t)*P); }
     MPI_Gather(&local_time,1,MPI_DOUBLE,times_all,1,MPI_DOUBLE,0,comm);
     MPI_Gather(&local_tests,1,MPI_UINT64_T,tests_all,1,MPI_UINT64_T,0,comm);
 
+    // maestro imprime resultados y desencripta si hubo hallazgo
     if(id==0){
         printf("→ BRUTEFORCE MPI (dinámico)\n");
         printf("  • Procesos : %d\n", P);
@@ -157,6 +181,7 @@ int main(int argc,char**argv){
         free(times_all); free(tests_all);
     }
 
+    // libera buffers y finaliza mpi
     free(cipher); free(needle_b);
     MPI_Barrier(comm); MPI_Finalize(); return 0;
 }

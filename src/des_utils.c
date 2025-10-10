@@ -1,3 +1,4 @@
+// incluye des utils y librerias base y openssl
 #include "des_utils.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -5,8 +6,8 @@
 #include <openssl/evp.h>
 #include <openssl/provider.h>
 
-/* ---------- IO ---------- */
 
+// lee archivo binario completo a memoria
 int read_whole_file(const char *path, unsigned char **buf, size_t *len) {
     FILE *f = fopen(path, "rb");
     if (!f) return -1;
@@ -22,7 +23,7 @@ int read_whole_file(const char *path, unsigned char **buf, size_t *len) {
     *len = n;
     return 0;
 }
-
+// escribe buffer binario a disco
 int write_whole_file(const char *path, const unsigned char *buf, size_t len) {
     FILE *f = fopen(path, "wb");
     if (!f) return -1;
@@ -31,8 +32,7 @@ int write_whole_file(const char *path, const unsigned char *buf, size_t len) {
     return n == len ? 0 : -2;
 }
 
-/* ---------- Padding a 8 bytes (ECB) ---------- */
-
+// aplica relleno con ceros hasta multiplo de 8 bytes
 size_t pad_zeros_alloc(const unsigned char *in, size_t len, unsigned char **out) {
     size_t rem = len % 8;
     size_t out_len = rem ? (len + (8 - rem)) : len;
@@ -43,13 +43,12 @@ size_t pad_zeros_alloc(const unsigned char *in, size_t len, unsigned char **out)
     return out_len;
 }
 
-/* ---------- Helpers ---------- */
-
+// convierte clave de 56 bits a arreglo de 8 bytes
 static void key56_to_bytes(uint64_t key56, unsigned char key8[8]) {
     for (int i = 0; i < 8; ++i) key8[i] = (unsigned char)((key56 >> (8*(7-i))) & 0xFF);
 }
 
-/* Carga una vez los providers 'default' y 'legacy' (OpenSSL 3) */
+// carga una sola vez los providers default y legacy
 static int ensure_providers(void) {
     static int done = 0;
     static OSSL_PROVIDER *prov_default = NULL;
@@ -61,14 +60,13 @@ static int ensure_providers(void) {
     return done;
 }
 
+// obtiene el cifrador des ecb desde openssl
 static EVP_CIPHER *fetch_des_ecb(void) {
-    /* Requiere legacy provider en OpenSSL 3 */
     if (!ensure_providers()) return NULL;
     return EVP_CIPHER_fetch(NULL, "DES-ECB", NULL);
 }
 
-/* ---------- EVP DES/ECB sin padding ---------- */
-
+// ejecuta des ecb sin relleno usando evp
 static int do_cipher(int enc, uint64_t key56,
                      const unsigned char *in, size_t len,
                      unsigned char *out) {
@@ -87,7 +85,6 @@ static int do_cipher(int enc, uint64_t key56,
         ok &= (EVP_CIPHER_CTX_set_padding(ctx, 0), 1);
         int outl = 0, fin = 0;
         ok &= (EVP_EncryptUpdate(ctx, out, &outl, in, (int)len) == 1);
-        /* sin padding: Final puede devolver 0; no es error si len múltiplo de 8 */
         EVP_EncryptFinal_ex(ctx, out + outl, &fin);
     } else {
         ok &= (EVP_DecryptInit_ex(ctx, cipher, NULL, key8, NULL) == 1);
@@ -102,6 +99,7 @@ static int do_cipher(int enc, uint64_t key56,
     return ok;
 }
 
+// cifra un buffer con des ecb
 void des_encrypt_buffer(uint64_t key56,
                         const unsigned char *in, size_t len,
                         unsigned char *out) {
@@ -111,6 +109,7 @@ void des_encrypt_buffer(uint64_t key56,
     }
 }
 
+// descifra un buffer con des ecb
 void des_decrypt_buffer(uint64_t key56,
                         const unsigned char *in, size_t len,
                         unsigned char *out) {
@@ -120,6 +119,7 @@ void des_decrypt_buffer(uint64_t key56,
     }
 }
 
+// prueba una clave y busca la subcadena en el texto plano
 int des_try_key(uint64_t key56,
                 const unsigned char *cipher, size_t len,
                 const char *needle) {

@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+// utilidades de lectura y escritura de archivos para encriptacion DES
 int read_whole_file(const char *path, unsigned char **buf, size_t *len);
 int write_whole_file(const char *path, const unsigned char *buf, size_t len);
 
@@ -21,4 +22,4 @@ int des_try_key(uint64_t key56,
                 const unsigned char *cipher, size_t len,
                 const char *needle);
 
-#endif /* DES_UTILS_H */
+#endif 

@@ -63,4 +63,5 @@ mpirun -np 4 ./bin/bruteforce_mpi_dynamic_adaptive \
 
 
 CASOS DE PRUEBA CALCULOS EXCEL:
-MODE=full ./scripts/bench_all.sh
+./scripts/bench_all.sh
+

@@ -1,4 +1,4 @@
-#define _POSIX_C_SOURCE 200809L
+// importaicon de libs
 #include <mpi.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,8 +8,10 @@
 
 #include "des_utils.h"
 
+// tags de mensajes para maestro y workers
 enum { TAG_REQ=1, TAG_TASK=2, TAG_FOUND=3, TAG_STOP=4 };
 
+// lee archivo binario completo en memoria y devuelve longitud
 static int load_file(const char *path, unsigned char **buf, size_t *len){
     FILE *f=fopen(path,"rb");
     if(!f) return -1;
@@ -22,6 +24,7 @@ static int load_file(const char *path, unsigned char **buf, size_t *len){
     fclose(f); *len=(size_t)n; return 0;
 }
 
+// busca subcadena de bytes dentro de un buffer
 static const unsigned char* u8memmem(const unsigned char *h, size_t n, const unsigned char *ndl, size_t m){
     if(!h || !ndl || m==0 || n<m) return NULL;
     for(size_t i=0;i<=n-m;i++){
@@ -31,15 +34,18 @@ static const unsigned char* u8memmem(const unsigned char *h, size_t n, const uns
 }
 
 int main(int argc, char **argv){
+    // inicia mpi y obtiene tamano y rango
     MPI_Init(&argc,&argv);
     MPI_Comm comm=MPI_COMM_WORLD;
     int P=1,id=0; MPI_Comm_size(comm,&P); MPI_Comm_rank(comm,&id);
     if(P<2){ if(id==0) fprintf(stderr,"Se requieren al menos 2 procesos (1 maestro + workers)\n"); MPI_Finalize(); return 1; }
 
+    // parsea argumentos de linea y valores por defecto
     const char *cpath=NULL,*needle_cli=NULL;
     uint64_t L=0,U=(1ULL<<24);
     double target_ms=30.0;
 
+    // ciclo de parseo de flags
     for(int i=1;i<argc;i++){
         if(!strcmp(argv[i],"-c") && i+1<argc) cpath=argv[++i];
         else if(!strcmp(argv[i],"-s") && i+1<argc) needle_cli=argv[++i];
@@ -52,13 +58,16 @@ int main(int argc, char **argv){
         MPI_Finalize(); return 2;
     }
 
+    // rank cero lee cifrado y valida multiplo de ocho
     unsigned char *cipher=NULL; size_t clen_sz=0;
     if(id==0){
         if(load_file(cpath,&cipher,&clen_sz)!=0){ fprintf(stderr,"No pude leer %s\n",cpath); MPI_Abort(comm,3); }
         if(clen_sz==0 || (clen_sz%8)!=0){ fprintf(stderr,"El cifrado debe ser >0 y múltiplo de 8 bytes\n"); MPI_Abort(comm,4); }
     }
+    // difunde longitud del cifrado a todos
     uint64_t clen64=(id==0)?(uint64_t)clen_sz:0;
     MPI_Bcast(&clen64,1,MPI_UINT64_T,0,comm);
+    // workers reservan buffer para el cifrado
     if(id!=0){
         clen_sz=(size_t)clen64;
         cipher=(unsigned char*)malloc(clen_sz);
@@ -66,6 +75,7 @@ int main(int argc, char **argv){
     }
     MPI_Bcast(cipher,(int)clen_sz,MPI_UNSIGNED_CHAR,0,comm);
 
+    // difunde longitud y contenido de la aguja
     int nlen=0; if(id==0) nlen=(int)strlen(needle_cli);
     MPI_Bcast(&nlen,1,MPI_INT,0,comm);
     unsigned char *needle=(unsigned char*)malloc((size_t)nlen+1);
@@ -73,6 +83,7 @@ int main(int argc, char **argv){
     if(id==0) memcpy(needle,needle_cli,(size_t)nlen+1);
     MPI_Bcast(needle,nlen+1,MPI_UNSIGNED_CHAR,0,comm);
 
+    // banner inicial y datos de ejecucion
     if(id==0){
         printf("============================================================\n");
         printf("  BruteDES • MPI (dinámico adaptativo)\n");
@@ -81,25 +92,32 @@ int main(int argc, char **argv){
         printf("→ BRUTEFORCE MPI (dynamic-adaptive)\n");
     }
 
+    // sincroniza procesos y toma tiempo global inicial
     MPI_Barrier(comm);
     double t_global0=MPI_Wtime();
 
+    // maestro muestra configuracion basica
     if(id==0){
         printf("  • Procesos : %d (1 maestro + %d workers)\n", P, P-1);
         printf("  • Rango    : [%" PRIu64 ", %" PRIu64 ")\n\n", L, U);
         fflush(stdout);
     }
 
+    // bloque del maestro con planificador dinamico
     if(id==0){
+        // inicializa punteros del rango de llaves
         uint64_t next=L, end=U;
 
+        // arreglos por worker para tiempos throughput y tamanos de chunk
         double last_send_t[1024]; for(int i=0;i<1024;i++) last_send_t[i]=0.0;
         double thr_keys_s[1024];  for(int i=0;i<1024;i++) thr_keys_s[i]=300000.0;
         uint64_t cur_B[1024];     for(int i=0;i<1024;i++) cur_B[i]=20000;
 
+        // estado de hallazgo y llave ganadora
         int any_found=0, winner=-1; uint64_t found_key=0;
         MPI_Status st;
 
+        // atiende primer pedido de cada worker y envia tarea inicial
         for(int w=1; w<P; ++w){
             int dummy; MPI_Recv(&dummy,1,MPI_INT,w,TAG_REQ,comm,&st);
             uint64_t B = cur_B[w];
@@ -109,16 +127,19 @@ int main(int argc, char **argv){
             last_send_t[w]=MPI_Wtime();
         }
 
+        // bucle principal del maestro para asignar tareas y escuchar eventos
         while(!any_found){
             MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, comm, &st);
             int src=st.MPI_SOURCE, tag=st.MPI_TAG;
 
+            // recibe llave encontrada y envia stop a todos
             if(tag==TAG_FOUND){
                 uint64_t k; MPI_Recv(&k,1,MPI_UINT64_T,src,TAG_FOUND,comm,&st);
                 any_found=1; winner=src; found_key=k;
                 for(int w=1; w<P; ++w){ MPI_Send(NULL,0,MPI_BYTE,w,TAG_STOP,comm); }
                 break;
 
+            // ajusta chunk con ema segun throughput y envia nueva tarea
             } else if(tag==TAG_REQ){
                 int dummy; MPI_Recv(&dummy,1,MPI_INT,src,TAG_REQ,comm,&st);
 
@@ -148,6 +169,7 @@ int main(int argc, char **argv){
             }
         }
 
+        // calcula tiempo del maestro y prepara metricas 
         double t_global1=MPI_Wtime();
         double mytime_master = t_global1 - t_global0;
         uint64_t mytests_master = 0;
@@ -158,10 +180,12 @@ int main(int argc, char **argv){
         int      *status = (int*)     calloc((size_t)P,sizeof(int));
         if(!times||!tests||!status){ fprintf(stderr,"Root: alloc metrics\n"); MPI_Abort(comm,77); }
 
+        // recolecta tiempos pruebas y estados
         MPI_Gather(&mytime_master, 1, MPI_DOUBLE,   times,  1, MPI_DOUBLE,   0, comm);
         MPI_Gather(&mytests_master,1, MPI_UINT64_T, tests,  1, MPI_UINT64_T, 0, comm);
         MPI_Gather(&st_master,     1, MPI_INT,      status, 1, MPI_INT,      0, comm);
 
+        // imprime tabla de procesos y marca al ganador
         printf("  • Detalle por proceso\n");
         printf("    RANK |   TESTS     |  STATUS           |  TIME(s)\n");
         printf("    -----+-------------+-------------------+---------\n");
@@ -171,6 +195,7 @@ int main(int argc, char **argv){
                    r, tests[r], status_str, times[r], (r==winner? "  <==":""));
         }
 
+        // muestra resultado y desencripta si se encontro llave
         printf("\n  • Resultado: %s\n", (winner>=1? "✔ Llave encontrada":"✘ No encontrada"));
         if(winner>=1){
             printf("    - Rank    : %d\n", winner);
@@ -184,13 +209,16 @@ int main(int argc, char **argv){
             }
         }
 
+        // calcula tiempo total tomando el maximo entre ranks
         double tmax=0.0; for(int r=0;r<P;r++) if(times[r]>tmax) tmax=times[r];
         printf("\n  • Resumen global\n");
         printf("    - Tiempo total (max rank)  : %.6f s\n\n", tmax);
         fflush(stdout);
 
+        // libera arreglos de metricas
         free(times); free(tests); free(status);
 
+         // bloque del worker
     } else {
         unsigned char *plain=(unsigned char*)malloc(clen_sz);
         if(!plain){ fprintf(stderr,"Rank %d: malloc plain\n", id); MPI_Abort(comm,7); }
@@ -204,9 +232,11 @@ int main(int argc, char **argv){
         while(1){
             MPI_Status stw;
             MPI_Probe(0, MPI_ANY_TAG, comm, &stw);
+            // recibe orden de detenerse
             if(stw.MPI_TAG==TAG_STOP){
                 MPI_Recv(NULL,0,MPI_BYTE,0,TAG_STOP,comm,&stw);
                 break;
+                 // recibe rango de trabajo
             } else if(stw.MPI_TAG==TAG_TASK){
                 uint64_t task[2]; MPI_Recv(task,2,MPI_UINT64_T,0,TAG_TASK,comm,&stw);
                 uint64_t a=task[0], b=task[1];
@@ -225,6 +255,7 @@ int main(int argc, char **argv){
         }
 fin_worker:
         {
+            // envia tiempo pruebas y estado al maestro
             double mytime = MPI_Wtime()-t0;
             int st_code = found_local ? 2 : 1 ;
 
@@ -235,6 +266,7 @@ fin_worker:
         free(plain);
     }
 
+    // libera buffers y finaliza mpi
     free(needle); free(cipher);
     MPI_Finalize();
     return 0;
