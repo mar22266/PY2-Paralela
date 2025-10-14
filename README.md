@@ -49,9 +49,7 @@ Estrategias de paralelización
 -   OpenSSL (`libcrypto`)
 -   GCC/Clang (C11)
 
-* * *
-
-## 🔧 Compilación
+## Compilación
 
 ```bash
 make
@@ -59,5 +57,28 @@ make
 
 
 ## Ejemplos de uso
+### Secuencial y encriptar
+```bash
+./bin/bruteforce_seq --encrypt -i data/mensaje.txt -k 57920 -o data/cipher.bin
+./bin/bruteforce_seq --bruteforce -c data/cipher.bin -s "es una prueba de" -L 0 -U 16777216
+```
+### Paralelo (4 procesos de ejemplo)
+```bash
+mpirun -np 4 ./bin/bruteforce_mpi                     -c data/cipher.bin -s "es una prueba de" -L 0 -U 16777216
+mpirun -np 4 ./bin/bruteforce_mpi_cyclic              -c data/cipher.bin -s "es una prueba de" -L 0 -U 16777216
+mpirun -np 4 ./bin/bruteforce_mpi_dynamic             -c data/cipher.bin -s "es una prueba de" -L 0 -U 16777216 -B 50000
+mpirun -np 4 ./bin/bruteforce_mpi_dynamic_adaptive   -c data/cipher.bin -s "es una prueba de" -L 0 -U 16777216 -T 30
+mpirun -np 4 ./bin/bruteforce_mpi_permuted            -c data/cipher.bin -s "es una prueba de" -L 0 -U 16777216 -R 12345
+```
 
-### Secuencial
+### Salida típica ejemplo
+**Detalle por proceso**
+
+`RANK | TESTS | STATUS        | TIME(s) -----+-------+---------------+--------   0  | 28672 | STOP(SIGNAL)  | 0.0221   3  | 26891 | FOUND         | 0.0209  <==`
+
+**Resultado:** ✔ Llave encontrada
+-   Rank : 3
+-   Llave: 57920
+-   Tiempo total (max rank): 0.022228 s
+
+
