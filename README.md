@@ -53,6 +53,10 @@ make
 
 
 ## Ejemplos de uso
+
+El archivo **`comandos.txt`** se encuentra en la raíz del proyecto.  
+Revisa este archivo para cualquier duda: ahí se detallan **todas las líneas de comando disponibles** y **su propósito** dentro del proyecto.
+
 ### Secuencial y encriptar
 ```bash
 ./bin/bruteforce_seq --encrypt -i data/mensaje.txt -k 57920 -o data/cipher.bin
