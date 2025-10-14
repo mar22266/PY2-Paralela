@@ -7,13 +7,9 @@ Qué hace
 -----------
 
 *   Cifra un texto de prueba con una “llave” (entero) para generar un cipher.bin.
-    
 *   Busca la llave probando candidatas en un rango \[L,U).
-    
 *   Descifra el buffer en memoria con cada candidata.
-    
 *   Verifica si el texto claro contiene la subcadena objetivo.
-    
 *   Difunde _early-stop_ al encontrar la llave.
     
 
@@ -74,8 +70,16 @@ mpirun -np 4 ./bin/bruteforce_mpi_permuted            -c data/cipher.bin -s "es 
 ### Salida típica ejemplo
 **Detalle por proceso**
 
-`RANK | TESTS | STATUS        | TIME(s) -----+-------+---------------+--------   0  | 28672 | STOP(SIGNAL)  | 0.0221   3  | 26891 | FOUND         | 0.0209  <==`
+## 
 
+RANK | TESTS | STATUS        | TIME(s)
+
+\-----+-------+---------------+--------
+
+  0  | 28672 | STOP(SIGNAL)  | 0.0221
+
+  3  | 26891 | FOUND         | 0.0209  <==
+  
 **Resultado:** ✔ Llave encontrada
 -   Rank : 3
 -   Llave: 57920
