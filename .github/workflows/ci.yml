@@ -1,0 +1,92 @@
+# .github/workflows/ci.yml
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-and-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install deps (OpenMPI + OpenSSL)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential pkg-config \
+            openmpi-bin libopenmpi-dev \
+            libssl-dev
+
+      - name: Build (make + variantes MPI)
+        run: |
+          make clean || true
+          make
+          # Compila variantes extra (si no están en tu Makefile)
+          mpicc -std=c11 -O3 -Wall -Wextra -Wshadow -Wpedantic -Iinclude \
+            src/bruteforce_mpi_cyclic.c src/des_utils.c -lcrypto -o bin/bruteforce_mpi_cyclic || true
+          mpicc -std=c11 -O3 -Wall -Wextra -Wshadow -Wpedantic -Iinclude \
+            src/bruteforce_mpi_dynamic.c src/des_utils.c -lcrypto -o bin/bruteforce_mpi_dynamic || true
+          mpicc -std=c11 -O3 -Wall -Wextra -Wshadow -Wpedantic -Iinclude \
+            src/bruteforce_mpi_dynamic_adaptive.c src/des_utils.c -lcrypto -o bin/bruteforce_mpi_dynamic_adaptive || true
+          mpicc -std=c11 -O3 -Wall -Wextra -Wshadow -Wpedantic -Iinclude \
+            src/bruteforce_mpi_permuted.c src/des_utils.c -lcrypto -o bin/bruteforce_mpi_permuted || true
+
+      - name: Create sample input
+        run: |
+          mkdir -p data logs
+          echo -n "Esta es una prueba de proyecto 2" > data/mensaje.txt
+          # Llave pequeña y rango pequeño para humo rápido
+          bin/bruteforce_seq --encrypt -i data/mensaje.txt -k 123713 -o data/cipher.bin
+
+      - name: Smoke test • secuencial
+        run: |
+          bin/bruteforce_seq --bruteforce -c data/cipher.bin -s "es una prueba de" -L 0 -U 65536 | tee logs/seq.txt
+
+      - name: Smoke test • MPI naïve
+        run: |
+          mpirun -np 4 bin/bruteforce_mpi \
+            -c data/cipher.bin -s "es una prueba de" -L 0 -U 65536 | tee logs/mpi_naive.txt
+
+      - name: Smoke test • MPI cíclico
+        run: |
+          mpirun -np 4 bin/bruteforce_mpi_cyclic \
+            -c data/cipher.bin -s "es una prueba de" -L 0 -U 65536 | tee logs/mpi_cyclic.txt
+
+      - name: Smoke test • MPI dinámico
+        run: |
+          mpirun -np 4 bin/bruteforce_mpi_dynamic \
+            -c data/cipher.bin -s "es una prueba de" -L 0 -U 65536 -B 5000 | tee logs/mpi_dynamic.txt
+
+      - name: Smoke test • MPI dinámico-adaptativo
+        run: |
+          mpirun -np 4 bin/bruteforce_mpi_dynamic_adaptive \
+            -c data/cipher.bin -s "es una prueba de" -L 0 -U 65536 -T 30 | tee logs/mpi_dynamic_adaptive.txt
+
+      - name: Smoke test • MPI permutado
+        run: |
+          mpirun -np 4 bin/bruteforce_mpi_permuted \
+            -c data/cipher.bin -s "es una prueba de" -L 0 -U 65536 -R 12345 | tee logs/mpi_permuted.txt
+
+      - name: Basic assertions (que algo encontró)
+        run: |
+          # Que existan logs y no estén vacíos
+          for f in logs/*.txt; do
+            test -s "$f" || (echo "❌ Log vacío: $f" && exit 1)
+          done
+          # Que al menos una variante MPI haya encontrado la llave
+          grep -q "Llave encontrada" logs/mpi_naive.txt logs/mpi_cyclic.txt logs/mpi_dynamic.txt logs/mpi_dynamic_adaptive.txt logs/mpi_permuted.txt || (echo "❌ Ninguna variante MPI encontró la llave en el smoke test" && exit 1)
+          echo "✅ Smoke tests OK"
+
+      - name: Upload logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-logs
+          path: logs/
