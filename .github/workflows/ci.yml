@@ -1,4 +1,3 @@
-# .github/workflows/ci.yml
 name: CI
 
 on:
@@ -13,6 +12,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
+    env:
+      OMPI_MCA_rmaps_base_oversubscribe: "1"
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -25,64 +27,87 @@ jobs:
             openmpi-bin libopenmpi-dev \
             libssl-dev
 
-      - name: Build (make + variantes MPI)
+      - name: Build (make + variantes MPI si existen)
         run: |
+          set -euo pipefail
           make clean || true
           make
-          # Compila variantes extra (si no están en tu Makefile)
-          mpicc -std=c11 -O3 -Wall -Wextra -Wshadow -Wpedantic -Iinclude \
-            src/bruteforce_mpi_cyclic.c src/des_utils.c -lcrypto -o bin/bruteforce_mpi_cyclic || true
-          mpicc -std=c11 -O3 -Wall -Wextra -Wshadow -Wpedantic -Iinclude \
-            src/bruteforce_mpi_dynamic.c src/des_utils.c -lcrypto -o bin/bruteforce_mpi_dynamic || true
-          mpicc -std=c11 -O3 -Wall -Wextra -Wshadow -Wpedantic -Iinclude \
-            src/bruteforce_mpi_dynamic_adaptive.c src/des_utils.c -lcrypto -o bin/bruteforce_mpi_dynamic_adaptive || true
-          mpicc -std=c11 -O3 -Wall -Wextra -Wshadow -Wpedantic -Iinclude \
-            src/bruteforce_mpi_permuted.c src/des_utils.c -lcrypto -o bin/bruteforce_mpi_permuted || true
+          # Compila variantes adicionales solo si el .c existe
+          [ -f src/bruteforce_mpi_cyclic.c ] && mpicc -std=c11 -O3 -Wall -Wextra -Wshadow -Wpedantic -Iinclude src/bruteforce_mpi_cyclic.c src/des_utils.c -lcrypto -o bin/bruteforce_mpi_cyclic
+          [ -f src/bruteforce_mpi_dynamic.c ] && mpicc -std=c11 -O3 -Wall -Wextra -Wshadow -Wpedantic -Iinclude src/bruteforce_mpi_dynamic.c src/des_utils.c -lcrypto -o bin/bruteforce_mpi_dynamic
+          [ -f src/bruteforce_mpi_dynamic_adaptive.c ] && mpicc -std=c11 -O3 -Wall -Wextra -Wshadow -Wpedantic -Iinclude src/bruteforce_mpi_dynamic_adaptive.c src/des_utils.c -lcrypto -o bin/bruteforce_mpi_dynamic_adaptive
+          [ -f src/bruteforce_mpi_permuted.c ] && mpicc -std=c11 -O3 -Wall -Wextra -Wshadow -Wpedantic -Iinclude src/bruteforce_mpi_permuted.c src/des_utils.c -lcrypto -o bin/bruteforce_mpi_permuted
+          echo "== BINARIOS =="
+          ls -l bin || true
 
-      - name: Create sample input
+      - name: Create sample input (clave dentro del rango)
         run: |
+          set -euo pipefail
           mkdir -p data logs
           echo -n "Esta es una prueba de proyecto 2" > data/mensaje.txt
-          # Llave pequeña y rango pequeño para humo rápido
-          bin/bruteforce_seq --encrypt -i data/mensaje.txt -k 123713 -o data/cipher.bin
+          # Clave de ejemplo (57920) y rango de búsqueda [0, 131072)
+          bin/bruteforce_seq --encrypt -i data/mensaje.txt -k 57920 -o data/cipher.bin
 
       - name: Smoke test • secuencial
         run: |
-          bin/bruteforce_seq --bruteforce -c data/cipher.bin -s "es una prueba de" -L 0 -U 65536 | tee logs/seq.txt
+          set -euo pipefail
+          bin/bruteforce_seq --bruteforce -c data/cipher.bin -s "es una prueba de" -L 0 -U 131072 2>&1 | tee logs/seq.txt
 
       - name: Smoke test • MPI naïve
         run: |
-          mpirun -np 4 bin/bruteforce_mpi \
-            -c data/cipher.bin -s "es una prueba de" -L 0 -U 65536 | tee logs/mpi_naive.txt
+          set -euo pipefail
+          test -x bin/bruteforce_mpi
+          mpirun --oversubscribe -np 4 bin/bruteforce_mpi \
+            -c data/cipher.bin -s "es una prueba de" -L 0 -U 131072 2>&1 | tee logs/mpi_naive.txt
 
       - name: Smoke test • MPI cíclico
+        if: hashFiles('bin/bruteforce_mpi_cyclic') != ''
         run: |
-          mpirun -np 4 bin/bruteforce_mpi_cyclic \
-            -c data/cipher.bin -s "es una prueba de" -L 0 -U 65536 | tee logs/mpi_cyclic.txt
+          set -euo pipefail
+          mpirun --oversubscribe -np 4 bin/bruteforce_mpi_cyclic \
+            -c data/cipher.bin -s "es una prueba de" -L 0 -U 131072 2>&1 | tee logs/mpi_cyclic.txt
 
       - name: Smoke test • MPI dinámico
+        if: hashFiles('bin/bruteforce_mpi_dynamic') != ''
         run: |
-          mpirun -np 4 bin/bruteforce_mpi_dynamic \
-            -c data/cipher.bin -s "es una prueba de" -L 0 -U 65536 -B 5000 | tee logs/mpi_dynamic.txt
+          set -euo pipefail
+          mpirun --oversubscribe -np 4 bin/bruteforce_mpi_dynamic \
+            -c data/cipher.bin -s "es una prueba de" -L 0 -U 131072 -B 5000 2>&1 | tee logs/mpi_dynamic.txt
 
       - name: Smoke test • MPI dinámico-adaptativo
+        if: hashFiles('bin/bruteforce_mpi_dynamic_adaptive') != ''
         run: |
-          mpirun -np 4 bin/bruteforce_mpi_dynamic_adaptive \
-            -c data/cipher.bin -s "es una prueba de" -L 0 -U 65536 -T 30 | tee logs/mpi_dynamic_adaptive.txt
+          set -euo pipefail
+          mpirun --oversubscribe -np 4 bin/bruteforce_mpi_dynamic_adaptive \
+            -c data/cipher.bin -s "es una prueba de" -L 0 -U 131072 -T 30 2>&1 | tee logs/mpi_dynamic_adaptive.txt
 
       - name: Smoke test • MPI permutado
+        if: hashFiles('bin/bruteforce_mpi_permuted') != ''
         run: |
-          mpirun -np 4 bin/bruteforce_mpi_permuted \
-            -c data/cipher.bin -s "es una prueba de" -L 0 -U 65536 -R 12345 | tee logs/mpi_permuted.txt
+          set -euo pipefail
+          mpirun --oversubscribe -np 4 bin/bruteforce_mpi_permuted \
+            -c data/cipher.bin -s "es una prueba de" -L 0 -U 131072 -R 12345 2>&1 | tee logs/mpi_permuted.txt
 
-      - name: Basic assertions (que algo encontró)
+      - name: Basic assertions (logs y hallazgo)
         run: |
-          # Que existan logs y no estén vacíos
+          set -euo pipefail
+          shopt -s nullglob
+          # Verifica que existan y no estén vacíos solo los que se generaron
           for f in logs/*.txt; do
+            echo "Verificando $f"
             test -s "$f" || (echo "❌ Log vacío: $f" && exit 1)
           done
+          # Reúne los logs presentes de variantes MPI
+          MPI_LOGS=()
+          [ -f logs/mpi_naive.txt ] && MPI_LOGS+=("logs/mpi_naive.txt")
+          [ -f logs/mpi_cyclic.txt ] && MPI_LOGS+=("logs/mpi_cyclic.txt")
+          [ -f logs/mpi_dynamic.txt ] && MPI_LOGS+=("logs/mpi_dynamic.txt")
+          [ -f logs/mpi_dynamic_adaptive.txt ] && MPI_LOGS+=("logs/mpi_dynamic_adaptive.txt")
+          [ -f logs/mpi_permuted.txt ] && MPI_LOGS+=("logs/mpi_permuted.txt")
+          # Asegura que haya al menos un log MPI
+          (( ${#MPI_LOGS[@]} > 0 )) || (echo "❌ No se generó ningún log MPI" && exit 1)
           # Que al menos una variante MPI haya encontrado la llave
-          grep -q "Llave encontrada" logs/mpi_naive.txt logs/mpi_cyclic.txt logs/mpi_dynamic.txt logs/mpi_dynamic_adaptive.txt logs/mpi_permuted.txt || (echo "❌ Ninguna variante MPI encontró la llave en el smoke test" && exit 1)
+          grep -q "Llave encontrada" "${MPI_LOGS[@]}" || (echo "❌ Ninguna variante MPI encontró la llave en el smoke test" && exit 1)
           echo "✅ Smoke tests OK"
 
       - name: Upload logs
