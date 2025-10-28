@@ -1,0 +1,32 @@
+============================================================
+  BruteDES • MPI (cíclico/strided)
+  - Llaves intercaladas: k = L + rank + t*P
+  - Early-stop no bloqueante
+============================================================
+
+→ BRUTEFORCE MPI (cíclico)
+  • Procesos : 8
+  • Archivo  : /home/rodri14/PY2-Paralela/data/cipher.bin (bytes=32)
+  • Subcadena: "prueba"
+  • Rango    : [0, 8388608)
+
+  • Detalle por proceso
+    RANK |   TESTS    |  STATUS           |  TIME(s)
+    -----+------------+-------------------+---------
+       0 |       7241 | FOUND             |  0.0282
+       1 |       6145 | STOP(SIGNAL)      |  0.0282
+       2 |      10373 | STOP(SIGNAL)      |  0.0233
+       3 |       4985 | STOP(SIGNAL)      |  0.0282
+       4 |       7625 | STOP(SIGNAL)      |  0.0206
+       5 |       4491 | STOP(SIGNAL)      |  0.0207
+       6 |       4269 | STOP(SIGNAL)      |  0.0207
+       7 |       4293 | STOP(SIGNAL)      |  0.0206
+
+  • Resultado: ✔ Llave encontrada
+    - Rank    : 0
+    - Llave   : 57920 (efectiva=57920, 0x000000000000e240)
+    - Texto   : Esta es una prueba de proyecto 2
+
+  • Resumen global
+    - Llaves probadas totales  : 49422
+    - Tiempo total (max rank)  : 0.028213 s

@@ -1,0 +1,29 @@
+============================================================
+  BruteDES • MPI (master–worker dinámico)
+  - Asignación por chunks, balance activo, early-stop
+============================================================
+
+→ BRUTEFORCE MPI (dinámico)
+  • Procesos : 8
+  • Chunk(B) : 100000
+  • Rango    : [0, 2097152)
+
+  • Detalle por proceso
+    RANK |   TESTS     |  TIME(s)
+    -----+-------------+---------
+       0 |           0 |  0.1746
+       1 |       57921 |  0.1149
+       2 |       23457 |  0.0744
+       3 |      100007 |  0.1746
+       4 |       97911 |  0.1745
+       5 |       75820 |  0.1745
+       6 |       84718 |  0.1746
+       7 |       87852 |  0.1746
+
+  • Resultado: ✔ Llave encontrada
+    - Rank    : 1
+    - Llave   : 57920 (efectiva=57920, 0x000000000000e240)
+    - Texto   : Esta es una prueba de proyecto 2
+
+  • Resumen global
+    - Tiempo total (max rank)  : 0.174576 s

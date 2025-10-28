@@ -1,0 +1,32 @@
+============================================================
+  BruteDES • MPI
+  - División equitativa del rango y early-stop
+============================================================
+
+→ BRUTEFORCE MPI
+  • Procesos : 8
+  • Archivo  : /home/rodri14/PY2-Paralela/data/cipher.bin (bytes=32)
+  • Subcadena: "prueba"
+  • Rango    : [0, 4194304)
+
+  • Detalle por proceso
+    RANK |     START       END   |   TESTS    |  STATUS           |  TIME(s)
+    -----+-----------------------+------------+-------------------+---------
+       0 |          0     524288 |      57921 | FOUND             |  0.0969
+       1 |     524288    1048576 |      40231 | STOP(SIGNAL)      |  0.0969
+       2 |    1048576    1572864 |      46122 | STOP(SIGNAL)      |  0.0969
+       3 |    1572864    2097152 |      32490 | STOP(SIGNAL)      |  0.0969
+       4 |    2097152    2621440 |      38983 | STOP(SIGNAL)      |  0.0969
+       5 |    2621440    3145728 |      37578 | STOP(SIGNAL)      |  0.0969
+       6 |    3145728    3670016 |      33145 | STOP(SIGNAL)      |  0.0969
+       7 |    3670016    4194304 |      31980 | STOP(SIGNAL)      |  0.0968
+
+  • Resultado: ✔ Llave encontrada
+    - Rank    : 0
+    - Llave   : 57920 (efectiva dec=57920, hex=0x000000000000e240)
+    - Texto   : Esta es una prueba de proyecto 2
+
+  • Resumen global
+    - Llaves probadas totales  : 318450
+    - Tiempo total (max rank)  : 0.096944 s
+

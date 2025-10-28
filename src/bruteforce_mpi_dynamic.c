@@ -28,17 +28,21 @@ static void banner(void){
 static void usage(const char *p){
     banner();
     fprintf(stderr,"USO:\n  mpirun -np <P> %s -c <cipher.bin> -s \"substring\" [-L low] [-U up) [-B chunk]\n",p);
+    fputs("  Opciones:\n", stderr);
+    fputs("    --no-stop    No detiene al encontrar la llave (recorre todo el rango)\n", stderr);
 }
 
 int main(int argc,char**argv){
     // inicializa parametros de entrada y valores por defecto
     const char *cipher_path=NULL,*needle=NULL; uint64_t L=0,U=(1ULL<<24); uint64_t B=1000000ULL;
+    int no_stop=0;
     for(int i=1;i<argc;i++){
         if(!strcmp(argv[i],"-c")&&i+1<argc) cipher_path=argv[++i];
         else if(!strcmp(argv[i],"-s")&&i+1<argc) needle=argv[++i];
         else if(!strcmp(argv[i],"-L")&&i+1<argc) L=parse_u64(argv[++i]);
         else if(!strcmp(argv[i],"-U")&&i+1<argc) U=parse_u64(argv[++i]);
         else if(!strcmp(argv[i],"-B")&&i+1<argc) B=parse_u64(argv[++i]);
+        else if(!strcmp(argv[i],"--no-stop")) no_stop=1;
         else if(!strcmp(argv[i],"-h")){ usage(argv[0]); return 0; }
     }
     // valida que existan ruta de cifrado y subcadena
@@ -71,9 +75,11 @@ int main(int argc,char**argv){
 
     // variables compartidas para resultado y rank ganador
     uint64_t found=UINT64_MAX; int who_found=-1;
+    const int allow_stop=!no_stop;
 
-    // contadores
     uint64_t local_tests = 0;    
+
+    MPI_Barrier(comm);
     double t0=MPI_Wtime();
 
     // bloque maestro asigna chunks y maneja early stop
@@ -87,19 +93,21 @@ int main(int argc,char**argv){
             int flag=0; MPI_Iprobe(MPI_ANY_SOURCE,TAG_FOUND,comm,&flag,&st);
             if(flag){
                 MPI_Recv(&found,1,MPI_UINT64_T,st.MPI_SOURCE,TAG_FOUND,comm,&st);
-                who_found=st.MPI_SOURCE;
-                for(int w=1; w<P; ++w){
-                    int f2=0; MPI_Iprobe(w,TAG_REQ,comm,&f2,&st);
-                    if(f2){
-                        uint64_t junk; MPI_Recv(&junk,1,MPI_UINT64_T,w,TAG_REQ,comm,&st);
+                if(who_found==-1) who_found=st.MPI_SOURCE;
+                if(allow_stop){
+                    for(int w=1; w<P; ++w){
+                        int f2=0; MPI_Iprobe(w,TAG_REQ,comm,&f2,&st);
+                        if(f2){
+                            uint64_t junk; MPI_Recv(&junk,1,MPI_UINT64_T,w,TAG_REQ,comm,&st);
+                        }
                         MPI_Send(&found,1,MPI_UINT64_T,w,TAG_STOP,comm);
                     }
+                    break;
                 }
-                break;
             }
             MPI_Probe(MPI_ANY_SOURCE,TAG_REQ,comm,&st);
             int src=st.MPI_SOURCE; uint64_t dummy; MPI_Recv(&dummy,1,MPI_UINT64_T,src,TAG_REQ,comm,&st);
-            if(found!=UINT64_MAX){ MPI_Send(&found,1,MPI_UINT64_T,src,TAG_STOP,comm); continue; }
+            if(found!=UINT64_MAX && allow_stop){ MPI_Send(&found,1,MPI_UINT64_T,src,TAG_STOP,comm); continue; }
             if(next>=U){ uint64_t msg=0; MPI_Send(&msg,1,MPI_UINT64_T,src,TAG_STOP,comm); active_workers--; continue; }
             uint64_t a=next, b=min_u64(next+B,U); next=b;
             uint64_t task[2]={a,b}; MPI_Send(task,2,MPI_UINT64_T,src,TAG_TASK,comm);
@@ -122,8 +130,10 @@ int main(int argc,char**argv){
                 for(uint64_t k=a;k<b;k++){
                     local_tests++;                              
                     if(des_try_key(k,cipher,clen,needle_b)){
-                        found=k; MPI_Send(&found,1,MPI_UINT64_T,0,TAG_FOUND,comm);
-                        goto done;
+                        if(found==UINT64_MAX){
+                            found=k; MPI_Send(&found,1,MPI_UINT64_T,0,TAG_FOUND,comm);
+                        }
+                        if(allow_stop){ goto done; }
                     }
                     int flag=0; MPI_Iprobe(0,TAG_STOP,comm,&flag,&st);
                     if(flag){ MPI_Recv(&found,1,MPI_UINT64_T,0,TAG_STOP,comm,&st); goto done; }
@@ -137,7 +147,7 @@ int main(int argc,char**argv){
         ; 
     }
 
-    //calcula tiempo de ejecucion
+    MPI_Barrier(comm);
     double t1=MPI_Wtime();
     double local_time = t1 - t0;
 
@@ -146,6 +156,8 @@ int main(int argc,char**argv){
     if(id==0){ times_all=(double*)malloc(sizeof(double)*P); tests_all=(uint64_t*)malloc(sizeof(uint64_t)*P); }
     MPI_Gather(&local_time,1,MPI_DOUBLE,times_all,1,MPI_DOUBLE,0,comm);
     MPI_Gather(&local_tests,1,MPI_UINT64_T,tests_all,1,MPI_UINT64_T,0,comm);
+
+    double t_par_max=0.0; MPI_Reduce(&local_time,&t_par_max,1,MPI_DOUBLE,MPI_MAX,0,comm);
 
     // maestro imprime resultados y desencripta si hubo hallazgo
     if(id==0){
@@ -157,9 +169,8 @@ int main(int argc,char**argv){
         puts("\n  • Detalle por proceso");
         puts("    RANK |   TESTS     |  TIME(s)");
         puts("    -----+-------------+---------");
-        double tmax=0.0; for(int r=0;r<P;r++){ 
+        for(int r=0;r<P;r++){ 
             printf("    %4d | %11" PRIu64 " | %7.4f\n", r, tests_all[r], times_all[r]);
-            if(times_all[r]>tmax) tmax=times_all[r];
         }
 
         if(found!=UINT64_MAX){
@@ -176,12 +187,12 @@ int main(int argc,char**argv){
         }
 
         puts("\n  • Resumen global");
-        printf("    - Tiempo total (max rank)  : %.6f s\n", tmax);
+        printf("    - Tiempo total (max rank): %.6f s\n", t_par_max);
 
         free(times_all); free(tests_all);
     }
 
     // libera buffers y finaliza mpi
     free(cipher); free(needle_b);
-    MPI_Barrier(comm); MPI_Finalize(); return 0;
+    MPI_Finalize(); return 0;
 }

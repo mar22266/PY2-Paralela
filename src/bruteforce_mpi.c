@@ -31,7 +31,7 @@ static void usage0(const char *p) {
     banner();
     fprintf(stderr,
       "USO (MPI):\n"
-      "  mpirun -np <P> %s -c <cipher.bin> -s \"substring\" [-L low] [-U up)\n"
+    "  mpirun -np <P> %s -c <cipher.bin> -s \"substring\" [-L low] [-U up) [--no-stop]\n"
       "Ejemplo:\n"
       "  mpirun -np 4 %s -c data/cipher.bin -s \"es una prueba de\" -L 0 -U 72057594037927936\n",
       p, p);
@@ -42,13 +42,15 @@ int main(int argc, char **argv) {
     // parseo de argumentos y rangos por defecto
     const char *cipher_path=NULL, *needle=NULL;
     uint64_t L=0, U=(1ULL<<24);
+    int no_stop = 0;
 
     for (int i=1; i<argc; ++i) {
         if (!strcmp(argv[i], "-c") && i+1<argc) cipher_path = argv[++i];
         else if (!strcmp(argv[i], "-s") && i+1<argc) needle = argv[++i];
-        else if (!strcmp(argv[i], "-L") && i+1<argc) L = parse_u64(argv[++i]);
+        elsAe if (!strcmp(argv[i], "-L") && i+1<argc) L = parse_u64(argv[++i]);
         else if (!strcmp(argv[i], "-U") && i+1<argc) U = parse_u64(argv[++i]);
-        else if (!strcmp(argv[i], "-h")) { usage0(argv[0]); return 0; }
+    else if (!strcmp(argv[i], "--no-stop")) no_stop = 1;
+    else if (!strcmp(argv[i], "-h")) { usage0(argv[0]); return 0; }
     }
     // valida presencia de archivo cifrado y subcadena objetivo
     if (!cipher_path || !needle) { usage0(argv[0]); return 1; }
@@ -104,35 +106,55 @@ int main(int argc, char **argv) {
     int status_code = 0; 
     int found_rank = -1;
 
-    MPI_Request req; MPI_Status st;
-    MPI_Irecv(&found, 1, MPI_UINT64_T, MPI_ANY_SOURCE, 777, comm, &req);
+    MPI_Request req = MPI_REQUEST_NULL; 
+    MPI_Status st;
+    const int allow_stop = !no_stop;
+    if (allow_stop) {
+        MPI_Irecv(&found, 1, MPI_UINT64_T, MPI_ANY_SOURCE, 777, comm, &req);
+    }
 
-    // inicia cronometro
+    MPI_Barrier(comm);
     double t0 = MPI_Wtime();
 
-    // recorre llaves de su subrango con early stop
     for (uint64_t k=myL; k<myU; ++k) {
-        int flag=0;
-        MPI_Test(&req, &flag, &st);
-        if (flag) { status_code = 1; break; }
+        if (allow_stop) {
+            int flag = 0;
+            MPI_Test(&req, &flag, &st);
+            if (flag) { status_code = 1; break; }
+        }
 
         local_tests++;
         if (des_try_key(k, cipher, clen, needle_b)) {
-            found = k; status_code = 2; found_rank = id;
-            for (int p=0; p<P; ++p) {
-                MPI_Send(&found, 1, MPI_UINT64_T, p, 777, comm);
+            if (found == UINT64_MAX) {
+                found = k;
+                found_rank = id;
+                status_code = 2;
             }
-            break;
+            if (allow_stop) {
+                for (int p=0; p<P; ++p) {
+                    MPI_Send(&found, 1, MPI_UINT64_T, p, 777, comm);
+                }
+                break;
+            }
         }
     }
 
-    // detiene cronometro y cierra recepcion pendiente si aplica
+    MPI_Barrier(comm);
     double t1 = MPI_Wtime();
     double local_time = t1 - t0;
 
-    int completed = 0;
-    MPI_Test(&req, &completed, &st);
-    if (!completed) { MPI_Cancel(&req); MPI_Wait(&req, &st); }
+    if (allow_stop && req != MPI_REQUEST_NULL) {
+        int completed = 0;
+        MPI_Test(&req, &completed, &st);
+        if (!completed) {
+            MPI_Cancel(&req);
+            MPI_Wait(&req, &st);
+        }
+    }
+
+    if (!allow_stop && status_code == 0 && found != UINT64_MAX) {
+        status_code = 2;
+    }
 
     // reserva buffers en maestro para recopilar metricas globales
     double *times_all = NULL;
@@ -157,8 +179,13 @@ int main(int argc, char **argv) {
     MPI_Gather(&found_rank, 1, MPI_INT,      rank_found_all,1, MPI_INT,  0, comm);
 
     // imprime resultados y resumen global en el rank cero
+    double t_par_max = 0.0;
+    MPI_Reduce(&local_time, &t_par_max, 1, MPI_DOUBLE, MPI_MAX, 0, comm);
+    uint64_t found_global = UINT64_MAX;
+    MPI_Reduce(&found, &found_global, 1, MPI_UINT64_T, MPI_MIN, 0, comm);
+
     if (id==0) {
-        printf("→ BRUTEFORCE MPI\n");
+    printf("→ BRUTEFORCE MPI\n");
         printf("  • Procesos : %d\n", P);
         printf("  • Archivo  : %s (bytes=%zu)\n", cipher_path, clen);
         printf("  • Subcadena: \"%s\"\n", needle_b);
@@ -169,7 +196,6 @@ int main(int argc, char **argv) {
         puts("    -----+-----------------------+------------+-------------------+---------");
 
         uint64_t sum_tests = 0;
-        double tmax = 0.0;
         int who_found = -1;
 
         for (int r=0; r<P; ++r) {
@@ -179,20 +205,19 @@ int main(int argc, char **argv) {
             printf("    %4d | %10" PRIu64 " %10" PRIu64 " | %10" PRIu64 " | %-17s | %7.4f\n",
                    r, L_all[r], U_all[r], tests_all[r], stxt, times_all[r]);
             sum_tests += tests_all[r];
-            if (times_all[r] > tmax) tmax = times_all[r];
             if (status_all[r]==2) who_found = r;
         }
 
-        if (found != UINT64_MAX) {
+        if (found_global != UINT64_MAX) {
             unsigned char *plain = (unsigned char*)malloc(clen+1);
-            des_decrypt_buffer(found, cipher, clen, plain);
+            des_decrypt_buffer(found_global, cipher, clen, plain);
             plain[clen] = 0;
 
-            uint64_t eff = des_effective_key(found);
+            uint64_t eff = des_effective_key(found_global);
             puts("\n  • Resultado: ✔ Llave encontrada");
             printf("    - Rank    : %d\n", (who_found>=0?who_found:rank_found_all[0]));
             printf("    - Llave   : %" PRIu64 " (efectiva dec=%" PRIu64 ", hex=0x%016" PRIx64 ")\n",
-                   found, eff, eff);
+                   found_global, eff, eff);
             printf("    - Texto   : %s\n", plain);
             free(plain);
         } else {
@@ -201,7 +226,7 @@ int main(int argc, char **argv) {
 
         puts("\n  • Resumen global");
         printf("    - Llaves probadas totales  : %" PRIu64 "\n", sum_tests);
-        printf("    - Tiempo total (max rank)  : %.6f s\n", tmax);
+        printf("    - Tiempo total (max rank): %.6f s\n", t_par_max);
         puts("");
     }
 
@@ -210,7 +235,6 @@ int main(int argc, char **argv) {
     free(needle_b);
     if (id==0) { free(times_all); free(tests_all); free(L_all); free(U_all); free(status_all); free(rank_found_all); }
 
-    MPI_Barrier(comm);
     MPI_Finalize();
     return 0;
 }
