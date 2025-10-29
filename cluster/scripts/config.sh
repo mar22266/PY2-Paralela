@@ -22,10 +22,7 @@ export USER="${USER_REMOTE}"  # Para SSH al nodo remoto"
 export HOST_A="localhost"
 
 # Nodos remotos (añade más según necesites)
-export HOST_B="172.30.172.182"
-# export HOST_C="192.168.1.102"
-# export HOST_D="192.168.1.103"
-
+export HOST_B="192.168.1.27"
 # Array de todos los hosts (para iterar en scripts)
 export ALL_HOSTS=("${HOST_A}" "${HOST_B}")
 
