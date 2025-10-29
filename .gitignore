@@ -1,3 +1,5 @@
+
+
 # Builds y binarios
 bin/
 build_*/
@@ -6,27 +8,14 @@ build_bins*/
 build_baseline_O2/
 build_bins_opt/
 
-# Artifacts - solo logs y temporales (CSVs y JSONs se pushean)
-artifacts/*/logs/
-artifacts/*/*.log
-artifacts/*/*.out
-artifacts/*/*.tmp
-artifacts/*/*.bak
+# Artifacts y logs
+artifacts/
 
-# Logs generales (CSVs en logs/ se permiten)
-logs/*.log
-logs/*.out
-logs/*.tmp
-logs/*.bak
 
-# Temporales globales
+logs/
 *.log
 *.out
 *.tmp
 *.bak
-*.swp
-*~
 
-# Archivos locales específicos
-comandos.txt
-Reporte PY2 Paralela.pdf
+# Archivos locales

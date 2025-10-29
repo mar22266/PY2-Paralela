@@ -211,7 +211,32 @@ PY2-Paralela/
 
 ---
 
-## �� Cómo Usar Esta Documentación
+## 🧪 Experimental: Hybrid MPI+OpenMP
+
+**Nueva implementación híbrida disponible:** `src/hybrid/bruteforce_mpi_cyclic_omp.c`
+
+Combina paralelización MPI (entre procesos) con OpenMP (dentro de cada proceso) para explorar mejora adicional en memoria compartida.
+
+```bash
+# Compilar versión híbrida
+bash scripts/compile_hybrid_omp.sh
+
+# Ejecutar (ejemplo: 4 procesos MPI × 2 hilos OpenMP = 8 workers)
+export OMP_NUM_THREADS=2
+mpirun -np 4 ./build_bins_opt/bruteforce_mpi_cyclic_omp \
+  -c data/cipher.bin -s "es una prueba de" -L 0 -U 8388608
+
+# Benchmark automatizado
+bash scripts/benchmark_hybrid_omp.sh
+```
+
+**Documentación completa:** Ver [`src/hybrid/README.md`](src/hybrid/README.md)
+
+**Mejora esperada:** 1.05x-1.15x vs MPI puro en nodos con memoria compartida (8+ cores)
+
+---
+
+## 📚 Cómo Usar Esta Documentación
 
 **Para entender resultados:**
 1. Leer [`opt/reports/FINAL_REPORT.md`](opt/reports/FINAL_REPORT.md) - Overview completo
