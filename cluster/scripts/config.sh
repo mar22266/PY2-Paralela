@@ -9,10 +9,11 @@
 # ============================================
 
 # Usuario (debe existir en todos los nodos con mismo nombre)
-export USER="rodri"
+export USER="rodri14"
 
 # Host maestro (desde donde se ejecuta mpirun)
-export HOST_A="172.19.91.53"
+# Usa localhost porque estamos ejecutando desde esta máquina
+export HOST_A="localhost"
 
 # Nodos remotos (añade más según necesites)
 export HOST_B="172.30.172.182"
