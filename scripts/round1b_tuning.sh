@@ -1,18 +1,12 @@
 #!/usr/bin/env bash
 #
-# round1b_tuning.sh — ROUND 1B: Optimización Individual
-#
 # Meta: Encontrar la mejor versión de cada sobreviviente de Round 1A.
 # Cada variante se optimiza según sus fortalezas específicas.
-#
-# Entrada: $SURVIVORS (o lee de round1a elimination_decisions.json)
-#
+##
 
 set -euo pipefail
 
-# ========================================
-# Configuración
-# ========================================
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$PROJECT_ROOT"
@@ -39,9 +33,7 @@ RANGES[easy]="0 2097152"
 RANGES[med]="0 4194304"
 RANGES[hard]="0 8388608"
 
-# ========================================
 # Determinar sobrevivientes
-# ========================================
 SURVIVORS="${SURVIVORS:-}"
 
 if [[ -z "$SURVIVORS" ]]; then
@@ -70,15 +62,11 @@ echo "P=$P, KEY=$KEY, REPS=$REPS"
 echo "Artifacts: $ARTIFACTS_DIR"
 echo ""
 
-# ========================================
-# CSV Header
-# ========================================
+
 CSV_FILE="$CSV_DIR/bench_round1b.csv"
 echo "category,variant,config_id,param_spec,rep,P,t_seq_s,t_par_s,speedup,efficiency,rank_found,tests_total,log_file" > "$CSV_FILE"
 
-# ========================================
-# Helper: ejecutar configuración
-# ========================================
+
 run_config() {
     local variant=$1
     local category=$2
@@ -146,9 +134,7 @@ run_config() {
     fi
 }
 
-# ========================================
 # Tuning: CYCLIC
-# ========================================
 if [[ " $SURVIVORS " =~ " cyclic " ]]; then
     echo ""
     echo "=== Tuning CYCLIC ==="
@@ -161,9 +147,7 @@ if [[ " $SURVIVORS " =~ " cyclic " ]]; then
     done
 fi
 
-# ========================================
 # Tuning: ADAPTIVE
-# ========================================
 if [[ " $SURVIVORS " =~ " adaptive " ]]; then
     echo ""
     echo "=== Tuning ADAPTIVE (barrido denso de T) ==="
@@ -181,9 +165,7 @@ if [[ " $SURVIVORS " =~ " adaptive " ]]; then
     done
 fi
 
-# ========================================
 # Tuning: DYNAMIC (repechaje diagnóstico, opcional)
-# ========================================
 if [[ " $SURVIVORS " =~ " dynamic " ]]; then
     echo ""
     echo "=== Tuning DYNAMIC (repechaje - grid fino de B) ==="
@@ -200,9 +182,7 @@ if [[ " $SURVIVORS " =~ " dynamic " ]]; then
     done
 fi
 
-# ========================================
-# Tuning: PERMUTED (repechaje diagnóstico, opcional)
-# ========================================
+# Tuning: PERMUTED 
 if [[ " $SURVIVORS " =~ " permuted " ]]; then
     echo ""
     echo "=== Tuning PERMUTED (repechaje - seeds) ==="
@@ -219,14 +199,9 @@ if [[ " $SURVIVORS " =~ " permuted " ]]; then
     done
 fi
 
-# ========================================
-# Copiar CSV a logs/
-# ========================================
 cp "$CSV_FILE" "logs/bench_round1b-$TS.csv"
 
-# ========================================
-# Análisis: Seleccionar mejores configs y aplicar criterio de pase a Round 2
-# ========================================
+
 echo ""
 echo "========================================="
 echo "Analizando resultados y seleccionando mejores configs..."

@@ -16,9 +16,7 @@ echo ""
 ERRORS=0
 WARNINGS=0
 
-# ========================================
-# 1. Verificar scripts
-# ========================================
+
 echo "1. Verificando scripts..."
 
 SCRIPTS=(
@@ -47,9 +45,7 @@ done
 
 echo ""
 
-# ========================================
-# 2. Verificar binarios
-# ========================================
+
 echo "2. Verificando binarios compilados..."
 
 if [[ ! -d "build_bins_opt" ]]; then
@@ -85,9 +81,7 @@ fi
 
 echo ""
 
-# ========================================
-# 3. Verificar datos
-# ========================================
+
 echo "3. Verificando archivos de datos..."
 
 if [[ -f "data/cipher.bin" ]]; then
@@ -99,9 +93,6 @@ fi
 
 echo ""
 
-# ========================================
-# 4. Verificar dependencias Python
-# ========================================
 echo "4. Verificando dependencias Python..."
 
 if command -v python3 &> /dev/null; then
@@ -131,15 +122,11 @@ fi
 
 echo ""
 
-# ========================================
-# 5. Verificar MPI
-# ========================================
 echo "5. Verificando MPI..."
 
 if command -v mpirun &> /dev/null; then
     echo "  ✓ mpirun disponible"
     
-    # Probar MPI básico
     if timeout 5 mpirun -np 2 echo "test" &>/dev/null; then
         echo "  ✓ MPI funciona correctamente"
     else
@@ -160,9 +147,7 @@ fi
 
 echo ""
 
-# ========================================
-# 6. Verificar directorios
-# ========================================
+
 echo "6. Verificando estructura de directorios..."
 
 DIRS=("artifacts" "logs" "data" "src" "scripts" "build_bins_opt")
@@ -183,9 +168,7 @@ done
 
 echo ""
 
-# ========================================
-# 7. Verificar herramientas auxiliares
-# ========================================
+
 echo "7. Verificando herramientas auxiliares..."
 
 TOOLS=("bc" "grep" "sed" "awk" "timeout")
@@ -201,9 +184,7 @@ done
 
 echo ""
 
-# ========================================
-# Resumen
-# ========================================
+
 echo "========================================="
 echo "  RESUMEN"
 echo "========================================="
@@ -219,13 +200,13 @@ if [[ $ERRORS -eq 0 && $WARNINGS -eq 0 ]]; then
     echo "  bash scripts/run_hybrid_pipeline.sh --only-phase0"
     exit 0
 elif [[ $ERRORS -eq 0 ]]; then
-    echo "⚠️  HAY $WARNINGS ADVERTENCIA(S) - El pipeline debería funcionar"
+    echo "  HAY $WARNINGS ADVERTENCIA(S) - El pipeline debería funcionar"
     echo ""
     echo "Revisa las advertencias arriba. Puedes continuar con:"
     echo "  bash scripts/run_hybrid_pipeline.sh"
     exit 0
 else
-    echo "❌ HAY $ERRORS ERROR(ES) Y $WARNINGS ADVERTENCIA(S)"
+    echo " HAY $ERRORS ERROR(ES) Y $WARNINGS ADVERTENCIA(S)"
     echo ""
     echo "Soluciones sugeridas:"
     

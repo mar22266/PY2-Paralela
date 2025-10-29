@@ -1,16 +1,9 @@
-#!/usr/bin/env bash
-#
-# round2_final.sh — ROUND 2: Competencia Final
-#
-# Meta: Comparar finalistas optimizados "mejor vs mejor".
-# Usa las configuraciones seleccionadas en Round 1B.
-#
+
+
 
 set -euo pipefail
 
-# ========================================
-# Configuración
-# ========================================
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$PROJECT_ROOT"
@@ -19,9 +12,9 @@ BUILD_DIR="${BUILD_DIR:-build_bins_opt}"
 CIPHER="${CIPHER:-data/cipher.bin}"
 SUBSTR="${SUBSTR:-prueba}"
 KEY="${KEY:-10000000}"
-P_VALUES="${P_VALUES:-8}"  # Puede ser "4 8 16" para robustez
+P_VALUES="${P_VALUES:-8}"  
 MPIRUN_OVERSUBSCRIBE="${MPIRUN_OVERSUBSCRIBE:-1}"
-REPS="${REPS:-5}"  # Más réplicas para intervalos de confianza
+REPS="${REPS:-5}"  
 
 # Timestamp
 TS="$(date +%Y%m%d_%H%M%S)"
@@ -38,9 +31,7 @@ RANGES[easy]="0 2097152"
 RANGES[med]="0 4194304"
 RANGES[hard]="0 8388608"
 
-# ========================================
-# Cargar configuraciones óptimas de Round 1B
-# ========================================
+
 LAST_R1B=$(ls -td artifacts/round1b-* 2>/dev/null | head -1)
 
 if [[ -z "$LAST_R1B" || ! -f "$LAST_R1B/best_configs.json" ]]; then
@@ -75,15 +66,11 @@ fi
 echo "Finalistas: $FINALISTS"
 echo ""
 
-# ========================================
-# CSV Header
-# ========================================
+
 CSV_FILE="$CSV_DIR/bench_round2.csv"
 echo "P,category,variant,config_id,param_spec,rep,t_seq_s,t_par_s,speedup,efficiency,rank_found,tests_total,log_file" > "$CSV_FILE"
 
-# ========================================
-# Helper: ejecutar con config óptima
-# ========================================
+
 run_optimal() {
     local P=$1
     local variant=$2
@@ -152,9 +139,7 @@ run_optimal() {
     fi
 }
 
-# ========================================
-# Cargar configs óptimas por variante y categoría
-# ========================================
+
 declare -A OPTIMAL_CONFIGS
 
 while IFS= read -r line; do
@@ -169,9 +154,6 @@ for variant, cats in configs.items():
         print(f\"{key}|{data['config_id']}|{data['param_spec']}\")
 ")
 
-# ========================================
-# Ejecución: Round 2
-# ========================================
 for P in $P_VALUES; do
     echo ""
     echo "========================================="
@@ -196,12 +178,10 @@ for P in $P_VALUES; do
             done
             
             if [[ -z "$config_line" ]]; then
-                # Fallback: usar config por defecto
                 echo "  ADVERTENCIA: No se encontró config óptima para $key, usando default"
                 config_id="default"
                 param_spec=""
             else
-                # Parsear config_line en formato "variant:category|config_id|param_spec"
                 IFS='|' read -r _ config_id param_spec <<< "$config_line"
             fi
             
@@ -213,14 +193,9 @@ for P in $P_VALUES; do
     done
 done
 
-# ========================================
-# Copiar CSV a logs/
-# ========================================
+
 cp "$CSV_FILE" "logs/bench_round2-$TS.csv"
 
-# ========================================
-# Análisis y Generación de Reportes
-# ========================================
 echo ""
 echo "========================================="
 echo "Generando análisis y gráficas..."

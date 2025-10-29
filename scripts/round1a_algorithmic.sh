@@ -1,17 +1,18 @@
 #!/usr/bin/env bash
 #
 # round1a_algorithmic.sh — ROUND 1A: Comparación Algorítmica
-#
-# Meta: Medir "mérito intrínseco" del enfoque bajo igualdad de condiciones.
-# Todos compilan con -O3 -march=native -DNDEBUG sin trucos específicos.
-# Parámetros obligatorios usan valores medianos del grid de Fase 0.
-#
+# Meta: Medir "mérito" del enfoque bajo igualdad de condiciones.
+
 
 set -euo pipefail
 
-# ========================================
-# Configuración
-# ========================================
+IFS=$'\n\t'
+umask 022
+
+for cmd in mpirun timeout python3 bc grep awk sed; do
+    command -v "$cmd" >/dev/null 2>&1 || { echo "ERROR: required command '$cmd' not found"; exit 1; }
+done
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$PROJECT_ROOT"
@@ -22,7 +23,7 @@ SUBSTR="${SUBSTR:-prueba}"
 KEY="${KEY:-10000000}"
 P="${P:-8}"
 MPIRUN_OVERSUBSCRIBE="${MPIRUN_OVERSUBSCRIBE:-1}"
-REPS="${REPS:-3}"  # Réplicas por categoría
+REPS="${REPS:-3}"  
 
 # Timestamp
 TS="$(date +%Y%m%d_%H%M%S)"
@@ -34,18 +35,16 @@ mkdir -p "$LOGS_DIR" "$CSV_DIR"
 
 # Rangos
 declare -A RANGES
-RANGES[easy]="0 2097152"   # 2^21
-RANGES[med]="0 4194304"    # 2^22
-RANGES[hard]="0 8388608"   # 2^23
+RANGES[easy]="0 2097152"   
+RANGES[med]="0 4194304"   
+RANGES[hard]="0 8388608"   
 
-# Parámetros medianos (según grid de Fase 0)
+# Parámetros medianos 
 DYNAMIC_B_MEDIAN=50000
 ADAPTIVE_T_MEDIAN=1.5
 PERMUTED_R_MEDIAN=12345
 
-# ========================================
-# Verificar binarios
-# ========================================
+
 echo "========================================="
 echo "ROUND 1A: Comparación Algorítmica"
 echo "========================================="
@@ -59,15 +58,11 @@ if [[ ! -d "$BUILD_DIR" ]]; then
     exit 1
 fi
 
-# ========================================
-# CSV Header
-# ========================================
+
 CSV_FILE="$CSV_DIR/bench_round1a.csv"
 echo "category,variant,rep,param_used,P,t_seq_s,t_par_s,speedup,efficiency,rank_found,tests_total,log_file" > "$CSV_FILE"
 
-# ========================================
-# Helper: ejecutar variante
-# ========================================
+
 run_variant() {
     local variant=$1
     local category=$2
@@ -136,9 +131,7 @@ run_variant() {
     fi
 }
 
-# ========================================
-# Ejecución: Todas las variantes
-# ========================================
+
 
 VARIANTS="naive cyclic dynamic adaptive permuted"
 CATEGORIES="easy med hard"
@@ -170,14 +163,10 @@ for variant in $VARIANTS; do
     done
 done
 
-# ========================================
-# Copiar CSV a logs/
-# ========================================
+
 cp "$CSV_FILE" "logs/bench_round1a-$TS.csv"
 
-# ========================================
-# Análisis: Calcular métricas y decidir eliminación
-# ========================================
+
 echo ""
 echo "========================================="
 echo "Analizando resultados (eliminación fundamental)..."

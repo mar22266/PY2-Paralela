@@ -1,16 +1,12 @@
 #!/usr/bin/env bash
 #
 # round0_probe.sh — FASE 0: Exploración de Hiperparámetros
-#
-# Meta: Encontrar el "punto dulce" de cada variante sin gastar horas.
 # Ejecuta grid search corto en easy+med, guarda mejores configs en selected.json
 #
 
 set -euo pipefail
 
-# ========================================
-# Configuración
-# ========================================
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$PROJECT_ROOT"
@@ -18,7 +14,7 @@ cd "$PROJECT_ROOT"
 BUILD_DIR="${BUILD_DIR:-build_bins_opt}"
 CIPHER="${CIPHER:-data/cipher.bin}"
 SUBSTR="${SUBSTR:-prueba}"
-KEY="${KEY:-10000000}"  # Fuera de rango para evitar early-stop
+KEY="${KEY:-10000000}"  
 P="${P:-8}"
 MPIRUN_OVERSUBSCRIBE="${MPIRUN_OVERSUBSCRIBE:-1}"
 
@@ -30,31 +26,23 @@ CSV_DIR="$ARTIFACTS_DIR/csv"
 
 mkdir -p "$LOGS_DIR" "$CSV_DIR"
 
-# Rangos: solo easy y med para ahorrar tiempo
 declare -A RANGES
-RANGES[easy]="0 2097152"   # 2^21
-RANGES[med]="0 4194304"    # 2^22
+RANGES[easy]="0 2097152"   
+RANGES[med]="0 4194304"    
 
-# ========================================
-# Grids de Hiperparámetros
-# ========================================
-# dynamic: chunk sizes
+
 DYNAMIC_B_VALUES=(20000 50000 100000 200000)
 
-# adaptive: threshold multipliers
 ADAPTIVE_T_VALUES=(1.1 1.3 1.5 1.8 2.2)
 
-# permuted: seeds (solo para volatilidad)
 PERMUTED_R_VALUES=(12345 98765)
 
-# ========================================
-# Helper: ejecutar y parsear
-# ========================================
+# ejecutar y parsear
 run_and_parse() {
     local variant=$1
     local category=$2
-    local param=$3  # "B=50000" o "T=1.5" o ""
-    local param_val=$4  # valor numérico para filename
+    local param=$3  
+    local param_val=$4  
     
     read -r L U <<< "${RANGES[$category]}"
     
@@ -79,7 +67,6 @@ run_and_parse() {
     
     local cmd_args="-c $CIPHER -s $SUBSTR -L $L -U $U -k $KEY"
     
-    # Agregar parámetro específico
     case $variant in
         dynamic)
             [[ -n "$param" ]] && cmd_args="$cmd_args -B ${param#B=}"
@@ -105,7 +92,7 @@ run_and_parse() {
         local rank_found=$(grep -oP 'rank_found:\s*\K-?\d+' "$log_file" | head -1)
         local tests_total=$(grep -oP 'tests_total:\s*\K\d+' "$log_file" | head -1)
         
-        # Medir t_seq si no está cacheado
+       
         local tseq_cache="$LOGS_DIR/.tseq_${category}_${L}_${U}"
         local t_seq
         if [[ -f "$tseq_cache" ]]; then
@@ -135,15 +122,10 @@ run_and_parse() {
     fi
 }
 
-# ========================================
-# CSV Header
-# ========================================
 CSV_FILE="$CSV_DIR/bench_round0.csv"
 echo "category,variant,param_name,param_value,t_seq_s,t_par_s,speedup,rank_found,tests_total,log_file" > "$CSV_FILE"
 
-# ========================================
-# Exploración por Variante
-# ========================================
+
 echo "========================================="
 echo "FASE 0: Exploración de Hiperparámetros"
 echo "========================================="
@@ -151,7 +133,6 @@ echo "Artifacts: $ARTIFACTS_DIR"
 echo "P=$P, KEY=$KEY"
 echo ""
 
-# NAIVE (baseline, sin parámetros)
 echo "=== NAIVE (baseline) ==="
 for cat in easy med; do
     if result=$(run_and_parse "naive" "$cat" "" "base"); then
@@ -159,7 +140,6 @@ for cat in easy med; do
     fi
 done
 
-# CYCLIC (sin hiperparámetros)
 echo ""
 echo "=== CYCLIC (sin hiperparámetros) ==="
 for cat in easy med; do
@@ -168,7 +148,6 @@ for cat in easy med; do
     fi
 done
 
-# DYNAMIC (grid de B)
 echo ""
 echo "=== DYNAMIC (B grid) ==="
 for B in "${DYNAMIC_B_VALUES[@]}"; do
@@ -179,7 +158,6 @@ for B in "${DYNAMIC_B_VALUES[@]}"; do
     done
 done
 
-# ADAPTIVE (grid de T)
 echo ""
 echo "=== ADAPTIVE (T grid) ==="
 for T in "${ADAPTIVE_T_VALUES[@]}"; do
@@ -190,7 +168,6 @@ for T in "${ADAPTIVE_T_VALUES[@]}"; do
     done
 done
 
-# PERMUTED (seeds)
 echo ""
 echo "=== PERMUTED (R grid) ==="
 for R in "${PERMUTED_R_VALUES[@]}"; do
@@ -201,9 +178,7 @@ for R in "${PERMUTED_R_VALUES[@]}"; do
     done
 done
 
-# ========================================
-# Análisis: Seleccionar Mejores Configs
-# ========================================
+
 echo ""
 echo "========================================="
 echo "Analizando resultados..."
