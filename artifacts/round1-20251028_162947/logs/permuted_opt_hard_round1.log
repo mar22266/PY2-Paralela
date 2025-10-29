@@ -1,0 +1,35 @@
+============================================================
+  BruteDES • MPI (permuted-stride)
+  - Permutación lineal (LCG) por stride para barajar llaves
+============================================================
+
+→ BRUTEFORCE MPI (permuted)
+  • Procesos : 8
+  • Archivo  : /home/rodri/PY2-Paralela/data/cipher.bin (bytes=32)
+  • Subcadena: "prueba"
+  • Rango    : [0, 8388608)
+
+  • Detalle por proceso
+    RANK |   TESTS     |  STATUS           |  TIME(s)
+    -----+-------------+-------------------+---------
+     0 |      137833 | FOUND             |  0.4644  <==
+     1 |      143360 | STOP(SIGNAL)      |  0.4704
+     2 |      139264 | STOP(SIGNAL)      |  0.4660
+     3 |      143360 | STOP(SIGNAL)      |  0.4718
+     4 |      135168 | STOP(SIGNAL)      |  0.4840
+     5 |      139264 | STOP(SIGNAL)      |  0.4782
+     6 |      139264 | STOP(SIGNAL)      |  0.4744
+     7 |      143360 | STOP(SIGNAL)      |  0.4763
+
+  • Resultado: ✔ Llave encontrada
+    - Rank    : 0
+    - Llave   : 123456
+    - Texto   : Esta es una prueba de proyecto 2
+
+  • Resumen global
+    - Tiempo total (max rank)  : 0.483979 s
+
+rank_found: 0
+tests_total: 1120873
+Tiempo total (max rank): 0.483979 s
+T_SEQ_FOR_THIS_RUN=0.079031

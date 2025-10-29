@@ -6,7 +6,7 @@ PROJ_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # CONFIG / VARIABLES
 # -----------------------
 # Ajustes: cambia si hace falta
-BUILD_DIR="${PROJ_DIR}/build_bins"          
+BUILD_DIR="${PROJ_DIR}/build_bins_opt"          
 ARTIFACTS_DIR="${PROJ_DIR}/artifacts"      
 LOGS_ROOT="${PROJ_DIR}/logs"                
 DATA_DIR="${PROJ_DIR}/data"
@@ -97,10 +97,36 @@ run_variant() {
   esac
 
   L=${range[0]}; U=${range[1]}
+  
+  # Measure t_seq for this specific case if not already measured
+  local tseq_cache="$RUN_LOG_DIR/.tseq_${category}_${L}_${U}"
+  if [[ ! -f "$tseq_cache" ]]; then
+    echo "  → Midiendo t_seq para $category [${L}, ${U})..."
+    local seq_log="$RUN_LOG_DIR/seq_${category}.log"
+    "$BUILD_DIR/bruteforce_seq" --bruteforce -c "$CIPHER" -s "prueba" -L "$L" -U "$U" > "$seq_log" 2>&1 || true
+    
+    # Parse t_seq with fallback
+    local t_seq=$(python3 - <<PY
+import re
+with open('$seq_log', 'r') as f:
+    s = f.read()
+t = re.search(r"Tiempo total \\(seq\\):\\s*([0-9]+\\.?[0-9]*)", s) or \\
+    re.search(r"Tiempo\\s*:\\s*([0-9]+\\.?[0-9]*)\\s*s", s)
+print(t.group(1) if t else "NaN")
+PY
+)
+    echo "$t_seq" > "$tseq_cache"
+    echo "  → t_seq = $t_seq s"
+  fi
+  local T_SEQ=$(cat "$tseq_cache")
+  
   logfile="$RUN_LOG_DIR/${variant_tag}_${category}_round1.log"
   echo "▶ Ejecutando $variant_tag ($category) -> $logfile"
   mpirun $MPIRUN_EXTRA -np "$P" "$variant_bin" -c "$CIPHER" -s "prueba" -L "$L" -U "$U" $extra_args > "$logfile" 2>&1 || true
   echo "  -> guardado: $logfile"
+  
+  # Store t_seq in log metadata for CSV generation
+  echo "T_SEQ_FOR_THIS_RUN=$T_SEQ" >> "$logfile"
 }
 
 # -----------------------
@@ -138,43 +164,77 @@ run_variant "$BUILD_DIR/bruteforce_mpi_permuted" "permuted_opt" "med"  ""
 run_variant "$BUILD_DIR/bruteforce_mpi_permuted" "permuted_opt" "hard" ""
 
 # -----------------------
-# Consolidar bench_round1.csv en RUN_CSV_DIR  (un solo CSV)
+# Consolidar bench_round1.csv en RUN_CSV_DIR con parsing robusto
 # -----------------------
 OUT_CSV="$RUN_CSV_DIR/bench_round1.csv"
 echo "mode_cache,bits,U,L,U_run,category,key,P,variant,chunk_B_or_T_or_R,t_seq_s,t_par_s,speedup,rank_found,tests_total,log_file" > "$OUT_CSV"
-T_SEQ=3.056193
 
-# extrae datos de cada log producido
+echo "=== Consolidando CSV con parsing robusto..."
+
+# extrae datos de cada log producido usando Python para parsing robusto
 for f in "$RUN_LOG_DIR"/*_round1.log; do
+  [[ ! -f "$f" ]] && continue
+  
   bn=$(basename "$f" .log)
   category=$(echo "$bn" | sed -n 's/.*_\([a-z]*\)_round1$/\1/p')
   variant=$(echo "$bn" | sed -E "s/_${category}_round1\$//")
-  P_ex=$(grep -m1 -E 'Procesos *:' "$f" | sed -E 's/.*: *([0-9]+).*/\1/' || echo "$P")
-  t_par_s=$(grep -E 'Tiempo total .*max rank' "$f" | sed -E 's/.*: *([0-9]+\.[0-9]+) .*/\1/' || true)
-  if [[ -z "$t_par_s" ]]; then
-    t_par_s=$(grep -E 'Tiempo total' "$f" | sed -E 's/.*: *([0-9]+\.[0-9]+).*/\1/' || true)
-  fi
-  t_par_s=${t_par_s:-NaN}
-  rank_found=$(grep -m1 -E '^- Rank *:|Rank *:' "$f" | sed -E 's/.*: *([0-9]+).*/\1/' || echo "")
-  tests_total=$(awk -F'|' '/\|/ && $2 ~ /[0-9]/ { gsub(/ /,"",$2); s += $2 } END { if (s==0) print ""; else print s }' "$f")
-  # chunk
+  
+  # Extract t_seq stored in log
+  T_SEQ=$(grep "^T_SEQ_FOR_THIS_RUN=" "$f" | cut -d= -f2 || echo "NaN")
+  
+  # Use Python for robust parsing
+  read -r P_ex t_par_s rank_found tests_total < <(python3 - <<PY
+import re
+import sys
+
+with open('$f', 'r', encoding='utf-8') as file:
+    s = file.read()
+
+# Parse P
+p = re.search(r"Procesos\\s*:\\s*(\\d+)", s)
+P = p.group(1) if p else "$P"
+
+# Parse t_par with fallbacks
+t = re.search(r"Tiempo total \\(max rank\\):\\s*([0-9]+\\.?[0-9]*)", s) or \\
+    re.search(r"- Tiempo total \\(max rank\\):\\s*([0-9]+\\.?[0-9]*)", s)
+t_par = t.group(1) if t else "NaN"
+
+# Parse rank_found with fallbacks
+r = re.search(r"rank_found:\\s*(-?\\d+)", s) or \\
+    re.search(r"rank found:\\s*(-?\\d+)", s, flags=re.I) or \\
+    re.search(r"- Rank\\s*:\\s*(\\d+)", s)
+rank = r.group(1) if r else "-1"
+
+# Parse tests_total with fallbacks
+n = re.search(r"tests_total:\\s*([0-9]+)", s) or \\
+    re.search(r"Llaves probadas totales\\s*:\\s*([0-9]+)", s)
+tests = n.group(1) if n else ""
+
+print(f"{P} {t_par} {rank} {tests}")
+PY
+)
+  
+  # Extract chunk parameter
   chunk=""
   if echo "$variant" | grep -q 'B[0-9]\+'; then
     chunk=$(echo "$variant" | sed -n 's/.*B\([0-9]\+\).*/\1/p')
   elif echo "$variant" | grep -q 'T[0-9]\+'; then
     chunk=$(echo "$variant" | sed -n 's/.*T\([0-9\.]\+\).*/\1/p')
   fi
+  
+  # Calculate speedup
   speedup="NaN"
-  if echo "$t_par_s" | grep -Eq '^[0-9]+(\.[0-9]+)?$'; then
+  if echo "$t_par_s $T_SEQ" | grep -Eq '^[0-9]+(\.[0-9]+)? [0-9]+(\.[0-9]+)?$'; then
     speedup=$(awk -v ts="$T_SEQ" -v tp="$t_par_s" 'BEGIN{ if(tp>0) printf("%.6f", ts/tp); else print "NaN" }')
   fi
+  
   echo "with_cache, , , , ,${category},${KEY},${P_ex},${variant},${chunk},${T_SEQ},${t_par_s},${speedup},${rank_found},${tests_total},${f}" >> "$OUT_CSV"
 done
 
 # copy only CSV to project's logs/ so logs/ keeps solo CSVs (no logs)
 cp -f "$OUT_CSV" "$LOGS_ROOT/bench_round1-${timestamp}.csv"
 
-echo " Round1 aislado finalizado."
+echo " ✓ Round1 aislado finalizado."
 echo " - Artifacts: $RUN_DIR"
 echo " - CSV consolidado: $OUT_CSV"
 echo " - Copiado a: $LOGS_ROOT/bench_round1-${timestamp}.csv"

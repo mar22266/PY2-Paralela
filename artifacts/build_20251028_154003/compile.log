@@ -1,0 +1,9 @@
+ Compilando binarios en: /home/rodri/PY2-Paralela/build_bins_opt
+ Logs de compilación: /home/rodri/PY2-Paralela/artifacts/build_20251028_154003/compile.log
+ - Compilando /home/rodri/PY2-Paralela/src/bruteforce_mpi_dynamic_adaptive.c -> /home/rodri/PY2-Paralela/build_bins_opt/bruteforce_mpi_dynamic_adaptive
+ - Compilando /home/rodri/PY2-Paralela/src/bruteforce_mpi_dynamic.c -> /home/rodri/PY2-Paralela/build_bins_opt/bruteforce_mpi_dynamic
+ - Compilando /home/rodri/PY2-Paralela/src/bruteforce_mpi_permuted.c -> /home/rodri/PY2-Paralela/build_bins_opt/bruteforce_mpi_permuted
+ - Compilando /home/rodri/PY2-Paralela/src/bruteforce_mpi_cyclic.c -> /home/rodri/PY2-Paralela/build_bins_opt/bruteforce_mpi_cyclic
+ - Compilando /home/rodri/PY2-Paralela/src/bruteforce_mpi.c -> /home/rodri/PY2-Paralela/build_bins_opt/bruteforce_mpi
+ - Compilando /home/rodri/PY2-Paralela/src/bruteforce_seq.c -> /home/rodri/PY2-Paralela/build_bins_opt/bruteforce_seq
+ Compilación finalizada. Binarios en: /home/rodri/PY2-Paralela/build_bins_opt

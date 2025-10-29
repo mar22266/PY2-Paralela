@@ -123,7 +123,16 @@ int main(int argc,char**argv){
             printf("    - Llave   : %" PRIu64 " (efectiva=%" PRIu64 ", 0x%016" PRIx64 ")\n", found_global, eff, eff);
             printf("    - Texto   : %s\n", plain); free(plain);
         } else puts("\n  • Resultado: ✘ No encontrada");
-        puts("\n  • Resumen global"); printf("    - Llaves probadas totales  : %" PRIu64 "\n", sum); printf("    - Tiempo total (max rank): %.6f s\n", t_par_max);
+        puts("\n  • Resumen global"); 
+        printf("    - Llaves probadas totales  : %" PRIu64 "\n", sum); 
+        printf("    - Tiempo total (max rank): %.6f s\n", t_par_max);
+        
+        // Standardized metrics for pipeline parsing
+        printf("rank_found: %d\n", (who>=0 ? who : -1));
+        printf("tests_total: %" PRIu64 "\n", sum);
+        printf("Tiempo total (max rank): %.6f s\n", t_par_max);
+        fflush(stdout);
+        
         free(times_all); free(tests_all); free(status_all); free(rf_all);
     }
     // libera recursos y finaliza mpi

@@ -169,8 +169,10 @@ int main(int argc,char**argv){
         puts("\n  • Detalle por proceso");
         puts("    RANK |   TESTS     |  TIME(s)");
         puts("    -----+-------------+---------");
+        uint64_t sum_tests = 0;
         for(int r=0;r<P;r++){ 
             printf("    %4d | %11" PRIu64 " | %7.4f\n", r, tests_all[r], times_all[r]);
+            sum_tests += tests_all[r];
         }
 
         if(found!=UINT64_MAX){
@@ -188,6 +190,12 @@ int main(int argc,char**argv){
 
         puts("\n  • Resumen global");
         printf("    - Tiempo total (max rank): %.6f s\n", t_par_max);
+        
+        // Standardized metrics for pipeline parsing
+        printf("rank_found: %d\n", (who_found>=0 ? who_found : -1));
+        printf("tests_total: %" PRIu64 "\n", sum_tests);
+        printf("Tiempo total (max rank): %.6f s\n", t_par_max);
+        fflush(stdout);
 
         free(times_all); free(tests_all);
     }

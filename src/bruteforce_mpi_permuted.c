@@ -211,10 +211,12 @@ int main(int argc, char **argv){
         printf("  • Detalle por proceso\n");
         printf("    RANK |   TESTS     |  STATUS           |  TIME(s)\n");
         printf("    -----+-------------+-------------------+---------\n");
+        uint64_t sum_tests = 0;
         for(int r=0;r<P;r++){
             const char *status_str = (found_flags[r] ? "FOUND" : (winner>=0 ? "STOP(SIGNAL)" : "DONE"));
             printf(" %5d | %11" PRIu64 " | %-17s | %7.4f%s\n",
                    r, tests[r], status_str, times[r], (r==winner? "  <==":""));
+            sum_tests += tests[r];
         }
         printf("\n  • Resultado: %s\n", (winner>=0? "✔ Llave encontrada":"✘ No encontrada"));
         if(winner>=0){
@@ -230,6 +232,11 @@ int main(int argc, char **argv){
         }
         printf("\n  • Resumen global\n");
         printf("    - Tiempo total (max rank)  : %.6f s\n\n", tmax);
+        
+        // Standardized metrics for pipeline parsing
+        printf("rank_found: %d\n", (winner>=0 ? winner : -1));
+        printf("tests_total: %" PRIu64 "\n", sum_tests);
+        printf("Tiempo total (max rank): %.6f s\n", tmax);
         fflush(stdout);
 
         free(found_flags); free(times); free(tests); free(keys);

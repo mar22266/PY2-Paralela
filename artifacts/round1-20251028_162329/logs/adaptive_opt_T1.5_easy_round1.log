@@ -1,0 +1,29 @@
+============================================================
+  BruteDES • MPI (dinámico adaptativo)
+  - Maestro estima throughput y ajusta chunk a 1.50 ms
+============================================================
+
+→ BRUTEFORCE MPI (dynamic-adaptive)
+  • Procesos : 4 (1 maestro + 3 workers)
+  • Rango    : [0, 2097152)
+
+  • Detalle por proceso
+    RANK |   TESTS     |  STATUS           |  TIME(s)
+    -----+-------------+-------------------+---------
+     0 |           0 | MASTER            |  0.0530
+     1 |       20000 | STOP(SIGNAL)      |  0.0548
+     2 |       22000 | STOP(SIGNAL)      |  0.0566
+     3 |       17921 | FOUND             |  0.0529  <==
+
+  • Resultado: ✔ Llave encontrada
+    - Rank    : 3
+    - Llave   : 57920
+    - Texto   : Esta es una prueba de proyecto 2
+
+  • Resumen global
+    - Tiempo total (max rank)  : 0.056583 s
+
+rank_found: 3
+tests_total: 59921
+Tiempo total (max rank): 0.056583 s
+T_SEQ_FOR_THIS_RUN=0.111672

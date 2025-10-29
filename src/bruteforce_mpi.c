@@ -47,10 +47,10 @@ int main(int argc, char **argv) {
     for (int i=1; i<argc; ++i) {
         if (!strcmp(argv[i], "-c") && i+1<argc) cipher_path = argv[++i];
         else if (!strcmp(argv[i], "-s") && i+1<argc) needle = argv[++i];
-        elsAe if (!strcmp(argv[i], "-L") && i+1<argc) L = parse_u64(argv[++i]);
+        else if (!strcmp(argv[i], "-L") && i+1<argc) L = parse_u64(argv[++i]);
         else if (!strcmp(argv[i], "-U") && i+1<argc) U = parse_u64(argv[++i]);
-    else if (!strcmp(argv[i], "--no-stop")) no_stop = 1;
-    else if (!strcmp(argv[i], "-h")) { usage0(argv[0]); return 0; }
+        else if (!strcmp(argv[i], "--no-stop")) no_stop = 1;
+        else if (!strcmp(argv[i], "-h")) { usage0(argv[0]); return 0; }
     }
     // valida presencia de archivo cifrado y subcadena objetivo
     if (!cipher_path || !needle) { usage0(argv[0]); return 1; }
@@ -227,6 +227,13 @@ int main(int argc, char **argv) {
         puts("\n  • Resumen global");
         printf("    - Llaves probadas totales  : %" PRIu64 "\n", sum_tests);
         printf("    - Tiempo total (max rank): %.6f s\n", t_par_max);
+        
+        // Standardized metrics for pipeline parsing
+        printf("rank_found: %d\n", who_found);
+        printf("tests_total: %" PRIu64 "\n", sum_tests);
+        printf("Tiempo total (max rank): %.6f s\n", t_par_max);
+        fflush(stdout);
+        
         puts("");
     }
 

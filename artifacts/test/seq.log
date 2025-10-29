@@ -1,0 +1,13 @@
+============================================================
+  BruteDES • Secuencial
+  - Cifra y ataca DES-ECB (OpenSSL EVP)
+  - Rango de llaves configurable [L, U)
+============================================================
+
+→ BRUTEFORCE SECUENCIAL
+  • Archivo  : data/cipher.bin (bytes=32)
+  • Subcadena: "prueba"
+  • Rango    : [0, 1000)
+  • Resultado: ✘ No encontrada en el rango
+  • Tiempo   : 0.019330 s
+Tiempo total (seq): 0.019330 s

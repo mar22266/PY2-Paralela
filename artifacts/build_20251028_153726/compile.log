@@ -1,0 +1,20 @@
+ Compilando binarios en: /home/rodri/PY2-Paralela/build_bins_opt
+ Logs de compilación: /home/rodri/PY2-Paralela/artifacts/build_20251028_153726/compile.log
+ - Compilando /home/rodri/PY2-Paralela/src/bruteforce_mpi_dynamic_adaptive.c -> /home/rodri/PY2-Paralela/build_bins_opt/bruteforce_mpi_dynamic_adaptive
+ - Compilando /home/rodri/PY2-Paralela/src/bruteforce_mpi_dynamic.c -> /home/rodri/PY2-Paralela/build_bins_opt/bruteforce_mpi_dynamic
+ - Compilando /home/rodri/PY2-Paralela/src/bruteforce_mpi_permuted.c -> /home/rodri/PY2-Paralela/build_bins_opt/bruteforce_mpi_permuted
+ - Compilando /home/rodri/PY2-Paralela/src/bruteforce_mpi_cyclic.c -> /home/rodri/PY2-Paralela/build_bins_opt/bruteforce_mpi_cyclic
+ - Compilando /home/rodri/PY2-Paralela/src/bruteforce_mpi.c -> /home/rodri/PY2-Paralela/build_bins_opt/bruteforce_mpi
+/home/rodri/PY2-Paralela/src/bruteforce_mpi.c: In function ‘main’:
+/home/rodri/PY2-Paralela/src/bruteforce_mpi.c:50:9: error: ‘elsAe’ undeclared (first use in this function)
+   50 |         elsAe if (!strcmp(argv[i], "-L") && i+1<argc) L = parse_u64(argv[++i]);
+      |         ^~~~~
+/home/rodri/PY2-Paralela/src/bruteforce_mpi.c:50:9: note: each undeclared identifier is reported only once for each function it appears in
+/home/rodri/PY2-Paralela/src/bruteforce_mpi.c:50:14: error: expected ‘;’ before ‘if’
+   50 |         elsAe if (!strcmp(argv[i], "-L") && i+1<argc) L = parse_u64(argv[++i]);
+      |              ^~~
+      |              ;
+/home/rodri/PY2-Paralela/src/bruteforce_mpi.c:51:9: error: ‘else’ without a previous ‘if’
+   51 |         else if (!strcmp(argv[i], "-U") && i+1<argc) U = parse_u64(argv[++i]);
+      |         ^~~~
+ ! ERROR compilando bruteforce_mpi

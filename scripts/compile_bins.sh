@@ -2,7 +2,7 @@
 set -Eeuo pipefail
 PROJ_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SRC="$PROJ_DIR/src"
-BIN_DIR="$PROJ_DIR/build_bins"   # build aislado
+BIN_DIR="$PROJ_DIR/build_bins_opt"   # build aislado
 mkdir -p "$BIN_DIR"
 
 echo " Compilando binarios en: $BIN_DIR"
@@ -27,9 +27,18 @@ fi
 
 INCLUDE_DIR="$PROJ_DIR/include"
 
-mpicc_flags=(-O3 -march=native -std=c99 "-I$INCLUDE_DIR")
+# Create artifacts/build_<timestamp> directory for logs
+BUILD_TS="$(date +%Y%m%d_%H%M%S)"
+ARTIFACTS_DIR="$PROJ_DIR/artifacts/build_${BUILD_TS}"
+mkdir -p "$ARTIFACTS_DIR"
+COMPILE_LOG="$ARTIFACTS_DIR/compile.log"
+
+echo " Compilando binarios en: $BIN_DIR" | tee "$COMPILE_LOG"
+echo " Logs de compilación: $COMPILE_LOG" | tee -a "$COMPILE_LOG"
+
+mpicc_flags=(-O3 -march=native -std=c11 "-I$INCLUDE_DIR")
 # keep a gcc_flags variant in case a non-MPI compile path is needed later
-gcc_flags=(-O3 -march=native -std=c99 "-I$INCLUDE_DIR")
+gcc_flags=(-O3 -march=native -std=c11 "-I$INCLUDE_DIR")
 ldflags=()
 
 if command -v pkg-config >/dev/null 2>&1 && pkg-config --exists openssl; then
@@ -182,12 +191,16 @@ for src_file in "${!map[@]}"; do
   src_path="$SRC/${src_file}.c"
   out_bin="$BIN_DIR/${map[$src_file]}"
   if [[ -f "$src_path" ]]; then
-    echo " - Compilando $src_path -> $out_bin"
-    mpicc "${mpicc_flags[@]}" "$src_path" "${common_sources[@]}" -o "$out_bin" "${ldflags[@]}"
-    chmod +x "$out_bin"
+    echo " - Compilando $src_path -> $out_bin" | tee -a "$COMPILE_LOG"
+    if mpicc "${mpicc_flags[@]}" "$src_path" "${common_sources[@]}" -o "$out_bin" "${ldflags[@]}" 2>&1 | tee -a "$COMPILE_LOG"; then
+      chmod +x "$out_bin"
+    else
+      echo " ! ERROR compilando $src_file" | tee -a "$COMPILE_LOG"
+      exit 1
+    fi
   else
-    echo " ! Fuente no encontrada: $src_path  (se omite)"
+    echo " ! Fuente no encontrada: $src_path  (se omite)" | tee -a "$COMPILE_LOG"
   fi
 done
 
-echo " Compilación finalizada. Binarios en: $BIN_DIR"
+echo " Compilación finalizada. Binarios en: $BIN_DIR" | tee -a "$COMPILE_LOG"

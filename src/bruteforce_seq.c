@@ -1,4 +1,5 @@
 // importacion de librerias
+#define _POSIX_C_SOURCE 199309L
 #include "des_utils.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -141,6 +142,8 @@ int main(int argc, char **argv) {
             puts("  • Resultado: ✘ No encontrada en el rango");
         }
         printf("  • Tiempo   : %.6f s\n", t1 - t0);
+        printf("Tiempo total (seq): %.6f s\n", t1 - t0);
+        fflush(stdout);
         free(cipher);
         return 0;
     }

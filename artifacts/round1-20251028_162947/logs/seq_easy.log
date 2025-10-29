@@ -1,0 +1,15 @@
+============================================================
+  BruteDES • Secuencial
+  - Cifra y ataca DES-ECB (OpenSSL EVP)
+  - Rango de llaves configurable [L, U)
+============================================================
+
+→ BRUTEFORCE SECUENCIAL
+  • Archivo  : /home/rodri/PY2-Paralela/data/cipher.bin (bytes=32)
+  • Subcadena: "prueba"
+  • Rango    : [0, 2097152)
+  • Resultado: ✔ Llave encontrada
+    - Llave   : 57920 (efectiva dec=57920, hex=0x000000000000e240)
+    - Texto   : Esta es una prueba de proyecto 2
+  • Tiempo   : 0.087942 s
+Tiempo total (seq): 0.087942 s
