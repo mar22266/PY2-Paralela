@@ -20,10 +20,7 @@ export USER="${USER_REMOTE}"  # Para SSH al nodo remoto"
 # Host maestro (desde donde se ejecuta mpirun)
 # Usa localhost porque estamos ejecutando desde esta máquina
 export HOST_A="localhost"
-
-# Nodos remotos (añade más según necesites)
-export HOST_B="192.168.1.27"
-# Array de todos los hosts (para iterar en scripts)
+export HOST_B="node-remote"  # ← Usar nombre en vez de IP
 export ALL_HOSTS=("${HOST_A}" "${HOST_B}")
 
 # ============================================
