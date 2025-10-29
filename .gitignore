@@ -1,55 +1,32 @@
-# Prerequisites
-*.d
+# Builds y binarios
+bin/
+build_*/
+opt/build*/
+build_bins*/
+build_baseline_O2/
+build_bins_opt/
 
-# Object files
-*.o
-*.ko
-*.obj
-*.elf
+# Artifacts - solo logs y temporales (CSVs y JSONs se pushean)
+artifacts/*/logs/
+artifacts/*/*.log
+artifacts/*/*.out
+artifacts/*/*.tmp
+artifacts/*/*.bak
 
-# Linker output
-*.ilk
-*.map
-*.exp
+# Logs generales (CSVs en logs/ se permiten)
+logs/*.log
+logs/*.out
+logs/*.tmp
+logs/*.bak
 
-# Precompiled Headers
-*.gch
-*.pch
-
-# Libraries
-*.lib
-*.a
-*.la
-*.lo
-
-# Shared objects (inc. Windows DLLs)
-*.dll
-*.so
-*.so.*
-*.dylib
-
-# Executables
-*.exe
+# Temporales globales
+*.log
 *.out
-*.app
-*.i*86
-*.x86_64
-*.hex
+*.tmp
+*.bak
+*.swp
+*~
 
-# Debug files
-*.dSYM/
-*.su
-*.idb
-*.pdb
-
-# Kernel Module Compile Results
-*.mod*
-*.cmd
-.tmp_versions/
-modules.order
-Module.symvers
-Mkfile.old
-dkms.conf
-
-# debug information files
-*.dwo
+# Archivos locales específicos
+comandos.txt
+Reporte PY2 Paralela.pdf

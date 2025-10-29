@@ -1,0 +1,33 @@
+======================================================================
+RESULTADOS: Compiler Flags Optimization
+======================================================================
+
+Config: hard_p4
+  Baseline (-O2):
+    Promedio: 0.024291s (±0.005427s)
+  Optimizado (-O3 + flags):
+    Promedio: 0.025244s (±0.006675s)
+  Speedup: 0.962x (-3.78%)
+
+Config: hard_p8
+  Baseline (-O2):
+    Promedio: 0.031197s (±0.004421s)
+  Optimizado (-O3 + flags):
+    Promedio: 0.027849s (±0.009956s)
+  Speedup: 1.120x (+12.02%)
+
+Config: hard_seq
+  Baseline (-O2):
+    Promedio: 0.083903s (±0.004652s)
+  Optimizado (-O3 + flags):
+    Promedio: 0.090830s (±0.004981s)
+  Speedup: 0.924x (-7.63%)
+
+======================================================================
+SPEEDUP PROMEDIO: 1.002x (+0.21%)
+======================================================================
+
+Flags aplicadas:
+  -O3 -march=native -flto -ftree-vectorize -funroll-loops
+
+❌ SIN MEJORA: Las flags no tienen impacto significativo

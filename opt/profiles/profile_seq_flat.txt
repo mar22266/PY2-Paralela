@@ -1,0 +1,30 @@
+Flat profile:
+
+Each sample counts as 0.01 seconds.
+ no time accumulated
+
+  %   cumulative   self              self     total           
+ time   seconds   seconds    calls  Ts/call  Ts/call  name    
+  0.00      0.00     0.00    57922     0.00     0.00  do_cipher
+  0.00      0.00     0.00    57921     0.00     0.00  des_try_key
+  0.00      0.00     0.00        2     0.00     0.00  now_secs
+  0.00      0.00     0.00        2     0.00     0.00  parse_u64
+  0.00      0.00     0.00        1     0.00     0.00  banner
+  0.00      0.00     0.00        1     0.00     0.00  des_decrypt_buffer
+  0.00      0.00     0.00        1     0.00     0.00  read_whole_file
+
+ %         the percentage of the total running time of the
+time       program used by this function.
+
+cumulative a running sum of the number of seconds accounted
+ seconds   for by this function and those listed above it.
+
+ self      the number of seconds accounted for by this
+seconds    function alone.  This is the major sort for this
+           listing.
+
+calls      the number of times this function was invoked, if
+           this function is profiled, else blank.
+
+ self      the average number of milliseconds spent in this
+ms/call    function per call, if this function is profiled,

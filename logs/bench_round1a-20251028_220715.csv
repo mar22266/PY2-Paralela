@@ -1,0 +1,46 @@
+category,variant,rep,param_used,P,t_seq_s,t_par_s,speedup,efficiency,rank_found,tests_total,log_file
+easy,naive,1,,4,0.088198,0.080543,1.095042,.273760,0,205607,artifacts/round1a-20251028_220715/logs/naive_easy_rep1.log
+easy,naive,2,,4,0.088198,0.090638,.973079,.243269,0,231364,artifacts/round1a-20251028_220715/logs/naive_easy_rep2.log
+easy,naive,3,,4,0.088198,0.090244,.977328,.244332,0,221155,artifacts/round1a-20251028_220715/logs/naive_easy_rep3.log
+med,naive,1,,4,0.071813,0.106161,.676453,.169113,0,225092,artifacts/round1a-20251028_220715/logs/naive_med_rep1.log
+med,naive,2,,4,0.071813,0.100586,.713946,.178486,0,247801,artifacts/round1a-20251028_220715/logs/naive_med_rep2.log
+med,naive,3,,4,0.071813,0.094378,.760908,.190227,0,255582,artifacts/round1a-20251028_220715/logs/naive_med_rep3.log
+hard,naive,1,,4,0.088780,0.114757,.773634,.193408,0,240818,artifacts/round1a-20251028_220715/logs/naive_hard_rep1.log
+hard,naive,2,,4,0.088780,0.086567,1.025564,.256391,0,208657,artifacts/round1a-20251028_220715/logs/naive_hard_rep2.log
+hard,naive,3,,4,0.088780,0.074445,1.192558,.298139,0,207734,artifacts/round1a-20251028_220715/logs/naive_hard_rep3.log
+easy,cyclic,1,,4,0.088198,0.020619,4.277511,1.069377,1,55192,artifacts/round1a-20251028_220715/logs/cyclic_easy_rep1.log
+easy,cyclic,2,,4,0.088198,0.020413,4.320677,1.080169,0,45711,artifacts/round1a-20251028_220715/logs/cyclic_easy_rep2.log
+easy,cyclic,3,,4,0.088198,0.027100,3.254538,.813634,1,70579,artifacts/round1a-20251028_220715/logs/cyclic_easy_rep3.log
+med,cyclic,1,,4,0.071813,0.026559,2.703904,.675976,0,62023,artifacts/round1a-20251028_220715/logs/cyclic_med_rep1.log
+med,cyclic,2,,4,0.071813,0.022286,3.222336,.805584,1,55180,artifacts/round1a-20251028_220715/logs/cyclic_med_rep2.log
+med,cyclic,3,,4,0.071813,0.018892,3.801238,.950309,0,55966,artifacts/round1a-20251028_220715/logs/cyclic_med_rep3.log
+hard,cyclic,1,,4,0.088780,0.021179,4.191888,1.047972,1,54825,artifacts/round1a-20251028_220715/logs/cyclic_hard_rep1.log
+hard,cyclic,2,,4,0.088780,0.020382,4.355804,1.088951,1,57650,artifacts/round1a-20251028_220715/logs/cyclic_hard_rep2.log
+hard,cyclic,3,,4,0.088780,0.020175,4.400495,1.100123,0,56235,artifacts/round1a-20251028_220715/logs/cyclic_hard_rep3.log
+easy,dynamic,1,-B 50000,4,0.088198,0.133050,.662893,.165723,2,81380,artifacts/round1a-20251028_220715/logs/dynamic_easy_rep1.log
+easy,dynamic,2,-B 50000,4,0.088198,0.104069,.847495,.211873,2,81380,artifacts/round1a-20251028_220715/logs/dynamic_easy_rep2.log
+easy,dynamic,3,-B 50000,4,0.088198,0.082212,1.072811,.268202,2,81380,artifacts/round1a-20251028_220715/logs/dynamic_easy_rep3.log
+med,dynamic,1,-B 50000,4,0.071813,0.086897,.826415,.206603,2,81380,artifacts/round1a-20251028_220715/logs/dynamic_med_rep1.log
+med,dynamic,2,-B 50000,4,0.071813,0.106041,.677219,.169304,2,81380,artifacts/round1a-20251028_220715/logs/dynamic_med_rep2.log
+med,dynamic,3,-B 50000,4,0.071813,0.079727,.900736,.225184,2,81380,artifacts/round1a-20251028_220715/logs/dynamic_med_rep3.log
+hard,dynamic,1,-B 50000,4,0.088780,0.072505,1.224467,.306116,2,81380,artifacts/round1a-20251028_220715/logs/dynamic_hard_rep1.log
+hard,dynamic,2,-B 50000,4,0.088780,0.082398,1.077453,.269363,2,81381,artifacts/round1a-20251028_220715/logs/dynamic_hard_rep2.log
+hard,dynamic,3,-B 50000,4,0.088780,0.089350,.993620,.248405,2,81380,artifacts/round1a-20251028_220715/logs/dynamic_hard_rep3.log
+easy,adaptive,1,-T 1.5,4,0.088198,0.028968,3.044669,.761167,3,57921,artifacts/round1a-20251028_220715/logs/adaptive_easy_rep1.log
+easy,adaptive,2,-T 1.5,4,0.088198,0.042171,2.091437,.522859,3,57921,artifacts/round1a-20251028_220715/logs/adaptive_easy_rep2.log
+easy,adaptive,3,-T 1.5,4,0.088198,0.034571,2.551213,.637803,3,61921,artifacts/round1a-20251028_220715/logs/adaptive_easy_rep3.log
+med,adaptive,1,-T 1.5,4,0.071813,0.034788,2.064303,.516075,3,57921,artifacts/round1a-20251028_220715/logs/adaptive_med_rep1.log
+med,adaptive,2,-T 1.5,4,0.071813,0.034165,2.101946,.525486,3,63921,artifacts/round1a-20251028_220715/logs/adaptive_med_rep2.log
+med,adaptive,3,-T 1.5,4,0.071813,0.036204,1.983565,.495891,3,57921,artifacts/round1a-20251028_220715/logs/adaptive_med_rep3.log
+hard,adaptive,1,-T 1.5,4,0.088780,0.032848,2.702752,.675688,3,61921,artifacts/round1a-20251028_220715/logs/adaptive_hard_rep1.log
+hard,adaptive,2,-T 1.5,4,0.088780,0.031874,2.785342,.696335,3,57921,artifacts/round1a-20251028_220715/logs/adaptive_hard_rep2.log
+hard,adaptive,3,-T 1.5,4,0.088780,0.040429,2.195948,.548987,3,57921,artifacts/round1a-20251028_220715/logs/adaptive_hard_rep3.log
+easy,permuted,1,-R 12345,4,0.088198,0.021727,4.059373,1.014843,1,39459,artifacts/round1a-20251028_220715/logs/permuted_easy_rep1.log
+easy,permuted,2,-R 12345,4,0.088198,0.019928,4.425832,1.106458,1,43555,artifacts/round1a-20251028_220715/logs/permuted_easy_rep2.log
+easy,permuted,3,-R 12345,4,0.088198,0.022242,3.965380,.991345,1,55843,artifacts/round1a-20251028_220715/logs/permuted_easy_rep3.log
+med,permuted,1,-R 12345,4,0.071813,0.020666,3.474934,.868733,1,39459,artifacts/round1a-20251028_220715/logs/permuted_med_rep1.log
+med,permuted,2,-R 12345,4,0.071813,0.028959,2.479816,.619954,1,55843,artifacts/round1a-20251028_220715/logs/permuted_med_rep2.log
+med,permuted,3,-R 12345,4,0.071813,0.019054,3.768919,.942229,1,47651,artifacts/round1a-20251028_220715/logs/permuted_med_rep3.log
+hard,permuted,1,-R 12345,4,0.088780,0.049036,1.810506,.452626,0,100619,artifacts/round1a-20251028_220715/logs/permuted_hard_rep1.log
+hard,permuted,2,-R 12345,4,0.088780,0.044008,2.017360,.504340,0,121099,artifacts/round1a-20251028_220715/logs/permuted_hard_rep2.log
+hard,permuted,3,-R 12345,4,0.088780,0.040483,2.193019,.548254,0,100619,artifacts/round1a-20251028_220715/logs/permuted_hard_rep3.log

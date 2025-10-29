@@ -15,8 +15,9 @@ COMPILE_LOG="$ARTIFACTS_DIR/compile.log"
 echo "Compilando (opt) en: $OUT" | tee "$COMPILE_LOG"
 echo "Logs de compilación: $COMPILE_LOG" | tee -a "$COMPILE_LOG"
 
-# Flags agresivos de optimización (ajustar si lo deseas)
-CFLAGS=(-O3 -march=native -flto -funroll-loops -fomit-frame-pointer -fno-common -std=c11 "-I$INCLUDE_DIR")
+# Flags agresivos de optimización (basado en profiling FASE B)
+# Ver: opt/reports/VECTORIZATION_DES.md - Mejora ~3% sobre -O2
+CFLAGS=(-O3 -march=native -flto -funroll-loops -ftree-vectorize -fomit-frame-pointer -fno-common -std=c11 "-I$INCLUDE_DIR")
 LDFLAGS=(-flto -lcrypto)
 
 if [[ -n "${CONDA_PREFIX:-}" && -d "$CONDA_PREFIX/lib" ]]; then

@@ -1,0 +1,42 @@
+{
+  "adaptive": {
+    "decision": "SOBREVIVE",
+    "reason": "Cumple criterios m\u00ednimos",
+    "mean_speedup_overall": 2.3912416666666667,
+    "mean_eff_overall": 0.597810111111111,
+    "categories_low_eff": 0,
+    "categories_slower_seq": 0
+  },
+  "cyclic": {
+    "decision": "SOBREVIVE",
+    "reason": "Cumple criterios m\u00ednimos",
+    "mean_speedup_overall": 3.8364878888888896,
+    "mean_eff_overall": 0.9591216666666665,
+    "categories_low_eff": 0,
+    "categories_slower_seq": 0
+  },
+  "dynamic": {
+    "decision": "ELIMINAR",
+    "reason": "Speedup < 1.0 en 2 categor\u00eda(s)",
+    "mean_speedup_overall": 0.9203454444444444,
+    "mean_eff_overall": 0.23008588888888892,
+    "categories_low_eff": 0,
+    "categories_slower_seq": 2
+  },
+  "naive": {
+    "decision": "ELIMINAR",
+    "reason": "Speedup < 1.0 en 2 categor\u00eda(s)",
+    "mean_speedup_overall": 0.9098346666666667,
+    "mean_eff_overall": 0.22745833333333332,
+    "categories_low_eff": 0,
+    "categories_slower_seq": 2
+  },
+  "permuted": {
+    "decision": "SOBREVIVE",
+    "reason": "Cumple criterios m\u00ednimos",
+    "mean_speedup_overall": 3.1327932222222223,
+    "mean_eff_overall": 0.7831980000000001,
+    "categories_low_eff": 0,
+    "categories_slower_seq": 0
+  }
+}

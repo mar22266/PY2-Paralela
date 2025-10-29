@@ -63,5 +63,39 @@ mpirun -np 4 ./bin/bruteforce_mpi_dynamic_adaptive \
 
 
 CASOS DE PRUEBA CALCULOS EXCEL:
-./scripts/bench_all.sh
+# OBSOLETO: ./scripts/bench_all.sh (reemplazado por pipeline híbrido)
+
+##############################
+# PIPELINE HÍBRIDO (4 fases)
+
+# Verificación pre-ejecución
+./scripts/check_pipeline_ready.sh
+
+# Pipeline completo
+P=4 REPS=5 bash scripts/run_hybrid_pipeline.sh
+
+# Por fases individuales
+bash scripts/round0_probe.sh          # Fase 0: Exploración hiperparámetros
+bash scripts/round1a_algorithmic.sh   # Round 1A: Comparación algorítmica
+bash scripts/round1b_tuning.sh        # Round 1B: Optimización individual
+bash scripts/round2_final.sh          # Round 2: Competencia final
+
+##############################
+# ROUND 3: SCALING ANALYSIS (cyclic vs adaptive con P=4,8,16)
+
+P_VALUES="4 8 16" VARIANTS="cyclic adaptive" REPS=3 timeout 1800 bash scripts/round3_scaling.sh
+
+##############################
+# DEMOSTRACIÓN INDIVIDUAL (para presentaciones)
+
+# Ejecutar todos los algoritmos uno por uno
+bash scripts/demo_individual.sh
+
+# O manualmente:
+./build_bins_opt/bruteforce_seq --bruteforce -c data/cipher.bin -s "es una prueba de" -L 0 -U 2097152
+mpirun -np 4 ./build_bins_opt/bruteforce_mpi -c data/cipher.bin -s "es una prueba de" -L 0 -U 2097152
+mpirun -np 4 ./build_bins_opt/bruteforce_mpi_cyclic -c data/cipher.bin -s "es una prueba de" -L 0 -U 2097152
+mpirun -np 4 ./build_bins_opt/bruteforce_mpi_dynamic -c data/cipher.bin -s "es una prueba de" -L 0 -U 2097152 -B 20000
+mpirun -np 4 ./build_bins_opt/bruteforce_mpi_dynamic_adaptive -c data/cipher.bin -s "es una prueba de" -L 0 -U 2097152 -T 1.8
+mpirun -np 4 ./build_bins_opt/bruteforce_mpi_permuted -c data/cipher.bin -s "es una prueba de" -L 0 -U 2097152 -R 12345
 
