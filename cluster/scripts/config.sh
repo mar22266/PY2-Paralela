@@ -9,7 +9,13 @@
 # ============================================
 
 # Usuario (debe existir en todos los nodos con mismo nombre)
-export USER="rodri14"
+export USER_LOCAL="rodri"
+
+# Usuario en nodo remoto
+export USER_REMOTE="rodri14"
+
+# Usar en scripts
+export USER="${USER_REMOTE}"  # Para SSH al nodo remoto"
 
 # Host maestro (desde donde se ejecuta mpirun)
 # Usa localhost porque estamos ejecutando desde esta máquina
