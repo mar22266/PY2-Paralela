@@ -1,13 +1,10 @@
-PY2-Paralela — Brute-force DES (MPI)
-------------------------------------
+Proyecto 2 - Computación Paralela y Distribuida — Brute-force DES (MPI)
 
 Romper DES por fuerza bruta. Incluye una versión secuencial y cinco enfoques paralelos con MPI: naïve (bloques), cíclico, dinámico, dinámico-adaptativo y permutado. Se mide tiempo secuencial, tiempo paralelo (tₚ = max rank) y speedup = tₛ / tₚ. Usa OpenSSL (libcrypto) para DES.
 
-**Estado:** ✅ Proyecto completo con profiling, optimización y validación  
+**Estado:** Proyecto completo con profiling, optimización y validación  
 **Ganador:** `bruteforce_mpi_cyclic` (3.57x @ P=4, 89% eficiencia)  
 **Mejora validada:** +2.1% con compiler flags optimizadas
-
----
 
 ## 📊 Resultados del Pipeline Evolutivo
 
@@ -24,8 +21,6 @@ Romper DES por fuerza bruta. Incluye una versión secuencial y cinco enfoques pa
 - **Optimizaciones MPI:** Chunking/batching fallaron (-6x a -8x slowdown)
 
 **📚 Documentación completa:** Ver [`opt/reports/FINAL_REPORT.md`](opt/reports/FINAL_REPORT.md)
-
----
 
 Qué hace
 -----------
@@ -81,8 +76,6 @@ bash scripts/compile_bins_opt.sh
 
 **Binarios optimizados disponibles en:** `build_bins_opt/`
 
----
-
 ## 🔬 Reproducir Pipeline y Profiling
 
 ### Validar Estado del Proyecto
@@ -111,8 +104,6 @@ bash scripts/benchmark_flags_long.sh      # Benchmark estable (5M keys)
 ```
 
 **Tiempo total:** ~30 minutos (automatizado)
-
----
 
 
 ## Ejemplos de uso
@@ -154,8 +145,6 @@ RANK | TESTS | STATUS        | TIME(s)
 
 
 
----
-
 ## 📚 Documentación Completa
 
 ### Reportes Principales
@@ -189,8 +178,6 @@ PY2-Paralela/
 └── README.md              # Este archivo
 ```
 
----
-
 ## 🎯 Conclusiones Principales
 
 ### ✅ Has Alcanzado el Techo de Eficiencia
@@ -208,8 +195,6 @@ PY2-Paralela/
 4. **Early-stop crítico:** Ahorra 98% de keys, no sacrificar
 
 **Recomendación:** cyclic + compiler flags es óptimo para este workload
-
----
 
 ## 🧪 Experimental: Hybrid MPI+OpenMP
 
@@ -234,8 +219,6 @@ bash scripts/benchmark_hybrid_omp.sh
 
 **Mejora esperada:** 1.05x-1.15x vs MPI puro en nodos con memoria compartida (8+ cores)
 
----
-
 ## 📚 Cómo Usar Esta Documentación
 
 
@@ -244,11 +227,7 @@ bash scripts/benchmark_hybrid_omp.sh
 2. Correr `bash scripts/round3_scaling.sh` - Benchmark rápido
 3. Ejecutar `bash opt/scripts/profile_des_kernel.sh` - Profiling completo
 
----
-
 ## 🏆 Créditos
 
-**Proyecto:** PY2-Paralela  
-**Autor:** mar22266  
+**Autor:** Sergio Orellana, Andre Marroquin y Rodrigo Mansilla
 **Fecha:** Octubre 2025  
-**Estado:** ✅ Completo y validado
