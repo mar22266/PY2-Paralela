@@ -1,6 +1,4 @@
-# ============================================================================
 # Makefile para compilación en cluster MPI
-# ============================================================================
 # Compila bruteforce_mpi_cyclic con flags optimizadas
 
 CC = mpicc

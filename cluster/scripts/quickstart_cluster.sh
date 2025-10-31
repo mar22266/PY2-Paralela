@@ -1,7 +1,5 @@
 #!/bin/bash
-# ============================================================================
-# quickstart_cluster.sh - Setup completo del cluster en un solo comando
-# ============================================================================
+# Setup completo del cluster en un solo comando
 # Ejecuta todos los pasos necesarios para configurar el cluster
 
 set -euo pipefail
@@ -15,10 +13,7 @@ log_info "  Quick Start - Cluster MPI Setup"
 log_info "========================================"
 log_info ""
 
-# ============================================
-# VERIFICAR CONFIGURACIÓN
-# ============================================
-
+# Verificar configuración
 log_info "Verificando configuración..."
 log_info "  Usuario: ${USER}"
 log_info "  Host maestro: ${HOST_A}"
@@ -33,10 +28,7 @@ if [[ ! $REPLY =~ ^[Yy]$ ]]; then
     exit 1
 fi
 
-# ============================================
-# PASO 1: SETUP SSH
-# ============================================
-
+# Paso 1: Configurar SSH sin contraseña
 log_info ""
 log_info "========================================" 
 log_info "PASO 1: Configurar SSH sin contraseña"
@@ -50,9 +42,7 @@ else
     exit 1
 fi
 
-# ============================================
-# PASO 2: PREPARAR NODOS
-# ============================================
+# Paso 2: Preparar nodos
 
 log_info ""
 log_info "========================================"
@@ -71,9 +61,7 @@ for host in "${ALL_HOSTS[@]:1}"; do  # Skip maestro
     fi
 done
 
-# ============================================
-# PASO 3: VERIFICAR ARQUITECTURAS
-# ============================================
+# Paso 3: Verificar arquitecturas
 
 log_info ""
 log_info "========================================"
@@ -83,9 +71,7 @@ log_info ""
 
 bash "${SCRIPT_DIR}/check_arch.sh"
 
-# ============================================
-# PASO 4: COMPILAR/DISTRIBUIR BINARIO
-# ============================================
+# Paso 4: Compilar y distribuir binario
 
 log_info ""
 log_info "========================================"
@@ -111,9 +97,7 @@ else
     exit 1
 fi
 
-# ============================================
-# PASO 5: GENERAR HOSTFILE
-# ============================================
+# Paso 5: Generar hostfile
 
 log_info ""
 log_info "========================================"
@@ -128,9 +112,7 @@ else
     exit 1
 fi
 
-# ============================================
-# PASO 6: TEST RUN
-# ============================================
+# Paso 6: Test run (opcional)
 
 log_info ""
 log_info "========================================"
@@ -159,10 +141,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     fi
 fi
 
-# ============================================
-# RESUMEN FINAL
-# ============================================
-
+# Resumen final
 log_info ""
 log_info "========================================"
 log_info "✓ SETUP COMPLETO"

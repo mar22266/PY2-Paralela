@@ -1,7 +1,5 @@
 #!/bin/bash
-# ============================================================================
-# check_arch.sh - Verificar arquitecturas de CPU en todos los nodos
-# ============================================================================
+# Verificar arquitecturas de CPU en todos los nodos
 # Detecta si los nodos tienen la misma arquitectura
 
 set -euo pipefail
@@ -14,10 +12,7 @@ log_info "========================================"
 log_info "  Verificando Arquitecturas"
 log_info "========================================"
 
-# ============================================
-# VERIFICAR CADA NODO
-# ============================================
-
+# Verificar acceso SSH
 declare -A ARCH_MAP
 declare -A OS_MAP
 
@@ -45,10 +40,7 @@ for host in "${ALL_HOSTS[@]}"; do
     log_info "  - Cores: ${CORES}"
 done
 
-# ============================================
-# ANALIZAR COMPATIBILIDAD
-# ============================================
-
+# Analizar homogeneidad
 log_info ""
 log_info "========================================"
 log_info "  Análisis de Compatibilidad"
@@ -79,10 +71,7 @@ else
     log_warn "  bash ${SCRIPT_DIR}/compile_on_nodes.sh"
 fi
 
-# ============================================
-# VERIFICAR BINARIO EXISTENTE
-# ============================================
-
+# Verificar binario existente
 log_info ""
 log_info "========================================"
 log_info "  Verificando Binario Existente"

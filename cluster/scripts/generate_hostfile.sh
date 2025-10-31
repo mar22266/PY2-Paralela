@@ -1,7 +1,5 @@
 #!/bin/bash
-# ============================================================================
-# generate_hostfile.sh - Generar hostfile para MPI
-# ============================================================================
+# Generar hostfile para MPI
 # Crea archivo hosts_TIMESTAMP.txt con configuración de nodos
 
 set -euo pipefail
@@ -17,9 +15,7 @@ log_info "========================================"
 log_info "  Generando Hostfile MPI"
 log_info "========================================"
 
-# ============================================
-# CREAR HOSTFILE
-# ============================================
+# Crear hostfile
 
 log_info "Creando hostfile: ${HOSTFILE}"
 
@@ -39,17 +35,13 @@ done
 log_info ""
 log_info "✓ Hostfile creado: ${HOSTFILE}"
 
-# ============================================
-# CREAR SYMLINK AL ÚLTIMO
-# ============================================
+# Crear symlink al último
 
 LATEST_LINK="${PROJECT_DIR}/cluster/hosts_latest.txt"
 ln -sf "${HOSTFILE}" "${LATEST_LINK}"
 log_info "✓ Symlink: ${LATEST_LINK} -> hosts_${RUN_ID}.txt"
 
-# ============================================
-# VERIFICAR CONECTIVIDAD
-# ============================================
+# Verificar conectividad
 
 log_info ""
 log_info "Verificando conectividad a todos los hosts..."
@@ -71,9 +63,7 @@ if [[ ${ALL_OK} -eq 0 ]]; then
     exit 1
 fi
 
-# ============================================
-# MOSTRAR CONFIGURACIÓN FINAL
-# ============================================
+# Mostrar configuración final
 
 log_info ""
 log_info "========================================"

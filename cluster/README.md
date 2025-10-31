@@ -309,6 +309,6 @@ Si los nodos comparten filesystem vía NFS, el binario y logs pueden estar en ub
 
 ---
 
-**Autor:** PY2-Paralela Cluster Setup  
+**Autor:** Sergio Orellana, Rodrigo Mansilla y Andre Marroquin
 **Fecha:** Octubre 2025  
 **Estado:** Ready for deployment

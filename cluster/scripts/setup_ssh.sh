@@ -1,7 +1,5 @@
 #!/bin/bash
-# ============================================================================
-# setup_ssh.sh - Configurar SSH sin contraseña entre nodos
-# ============================================================================
+# Configurar SSH sin contraseña entre nodos
 # Genera par de llaves SSH y las distribuye a todos los nodos
 
 set -euo pipefail
@@ -14,9 +12,7 @@ log_info "========================================"
 log_info "  Configurando SSH Sin Contraseña"
 log_info "========================================"
 
-# ============================================
-# GENERAR PAR DE LLAVES (SI NO EXISTE)
-# ============================================
+# Generar par de llaves SSH si no existe
 
 SSH_KEY="${HOME}/.ssh/id_ed25519"
 
@@ -28,9 +24,7 @@ else
     log_info "✓ Par de llaves generado"
 fi
 
-# ============================================
-# DISTRIBUIR LLAVE A TODOS LOS NODOS
-# ============================================
+# Distribuir llave pública a todos los nodos
 
 for host in "${ALL_HOSTS[@]}"; do
     log_info ""
@@ -65,9 +59,7 @@ for host in "${ALL_HOSTS[@]}"; do
     fi
 done
 
-# ============================================
-# VERIFICACIÓN FINAL
-# ============================================
+# Verificación final
 
 log_info ""
 log_info "========================================"

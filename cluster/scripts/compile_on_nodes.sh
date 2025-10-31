@@ -1,7 +1,5 @@
 #!/bin/bash
-# ============================================================================
-# compile_on_nodes.sh - Compilar binario en cada nodo remoto
-# ============================================================================
+# Compilar binario en cada nodo remoto
 # Para clusters heterogéneos o cuando el binario no es compatible
 
 set -euo pipefail
@@ -14,10 +12,7 @@ log_info "========================================"
 log_info "  Compilando en Nodos Remotos"
 log_info "========================================"
 
-# ============================================
-# COMPILAR EN CADA NODO
-# ============================================
-
+# Compilar en cada nodo
 for host in "${ALL_HOSTS[@]}"; do
     log_info ""
     log_info "Compilando en ${host}..."
@@ -73,10 +68,7 @@ EOFCOMPILE
     fi
 done
 
-# ============================================
-# VERIFICACIÓN FINAL
-# ============================================
-
+# Verificación final
 log_info ""
 log_info "========================================"
 log_info "  Verificación Final"

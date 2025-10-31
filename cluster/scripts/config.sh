@@ -1,12 +1,8 @@
 #!/bin/bash
-# ============================================================================
-# config.sh - Variables de configuración para cluster MPI
-# ============================================================================
+# Variables de configuración para cluster MPI
 # Edita este archivo con tus valores específicos antes de ejecutar scripts
 
-# ============================================
-# CONFIGURACIÓN DE HOSTS
-# ============================================
+# Configuración de hosts y usuario
 
 # Usuario (debe existir en todos los nodos con mismo nombre)
 export USER_LOCAL="rodri"
@@ -23,10 +19,7 @@ export HOST_A="localhost"
 export HOST_B="node-remote"  # ← Usar nombre en vez de IP
 export ALL_HOSTS=("${HOST_A}" "${HOST_B}")
 
-# ============================================
-# CONFIGURACIÓN MPI
-# ============================================
-
+# Configuración de MPI
 # Cores/slots disponibles por host
 export SLOTS_PER_HOST=4
 
@@ -43,9 +36,7 @@ export MPI_BIND_TO="core"
 # - "socket": Por socket NUMA
 export MPI_MAP_BY="slot"
 
-# ============================================
-# RUTAS DEL PROYECTO
-# ============================================
+# Rutas y directorios
 
 # Directorio raíz del proyecto (debe ser igual en todos los nodos)
 export PROJECT_DIR="/home/${USER}/PY2-Paralela"
@@ -59,9 +50,7 @@ export REMOTE_LOG_DIR="/tmp/mpi_logs"
 # Directorio para logs recolectados (maestro)
 export COLLECTED_LOGS_DIR="${PROJECT_DIR}/cluster/collected_logs"
 
-# ============================================
-# CONFIGURACIÓN DEL BENCHMARK
-# ============================================
+# Configuración de la benchmark
 
 # Rango de búsqueda por defecto
 export RANGE_START=0
@@ -73,9 +62,7 @@ export CIPHER_FILE="${PROJECT_DIR}/data/cipher.bin"
 # Substring a buscar
 export SEARCH_STRING="es una prueba de"
 
-# ============================================
-# CONFIGURACIÓN DE RED
-# ============================================
+# Configuración de red
 
 # Puerto SSH (default: 22)
 export SSH_PORT=22
@@ -89,9 +76,7 @@ export SSH_TIMEOUT=10
 # - "sm": Shared memory (solo intra-nodo)
 export MPI_BTL="tcp,sm,self"
 
-# ============================================
-# CONFIGURACIÓN AVANZADA
-# ============================================
+# Configuración de ejecución
 
 # Prefijo para archivos de salida
 export OUTPUT_PREFIX="mpi_cluster"
@@ -105,9 +90,7 @@ export VERBOSE=1
 # Usar colores en output
 export USE_COLORS=1
 
-# ============================================
-# FUNCIONES AUXILIARES
-# ============================================
+# Helpers
 
 # Generar Run ID único
 generate_run_id() {

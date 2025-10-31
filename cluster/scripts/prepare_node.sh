@@ -1,9 +1,6 @@
 #!/bin/bash
-# ============================================================================
-# prepare_node.sh - Preparar nodo remoto para cluster MPI
-# ============================================================================
+# Preparar nodo remoto para cluster MPI
 # Uso: bash prepare_node.sh <hostname>
-# Ejemplo: bash prepare_node.sh 192.168.1.101
 
 set -euo pipefail
 
@@ -11,9 +8,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/config.sh"
 
-# ============================================
-# ARGUMENTOS
-# ============================================
+# Argumentos
 
 if [[ $# -lt 1 ]]; then
     log_error "Uso: $0 <hostname>"
@@ -27,9 +22,7 @@ log_info "========================================"
 log_info "  Preparando Nodo: ${TARGET_HOST}"
 log_info "========================================"
 
-# ============================================
-# VERIFICAR CONECTIVIDAD
-# ============================================
+# Verificar conectividad
 
 log_info "Verificando conectividad SSH..."
 if ! ssh -o ConnectTimeout=${SSH_TIMEOUT} -o BatchMode=yes "${USER}@${TARGET_HOST}" 'echo SSH_TEST_OK' > /dev/null 2>&1; then
@@ -40,10 +33,7 @@ if ! ssh -o ConnectTimeout=${SSH_TIMEOUT} -o BatchMode=yes "${USER}@${TARGET_HOS
 fi
 log_info "✓ Conectividad SSH OK"
 
-# ============================================
-# SCRIPT DE PREPARACIÓN REMOTO
-# ============================================
-
+# Script de preparación remoto
 log_info "Creando script de preparación remoto..."
 
 REMOTE_SCRIPT=$(cat <<'EOFSCRIPT'
@@ -161,9 +151,7 @@ REMOTE_SCRIPT="${REMOTE_SCRIPT//__USER__/${USER}}"
 REMOTE_SCRIPT="${REMOTE_SCRIPT//__PROJECT_DIR__/${PROJECT_DIR}}"
 REMOTE_SCRIPT="${REMOTE_SCRIPT//__REMOTE_LOG_DIR__/${REMOTE_LOG_DIR}}"
 
-# ============================================
-# EJECUTAR SCRIPT REMOTO
-# ============================================
+# Script de preparación remoto
 
 log_info "Ejecutando preparación en nodo remoto..."
 log_info "(Esto puede tomar varios minutos...)"

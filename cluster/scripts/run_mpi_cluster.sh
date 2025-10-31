@@ -1,7 +1,5 @@
 #!/bin/bash
-# ============================================================================
-# run_mpi_cluster.sh - Ejecutar bruteforce en cluster MPI
-# ============================================================================
+# Ejecutar bruteforce en cluster MPI
 # Lanza mpirun en todos los nodos y recolecta logs
 
 set -euo pipefail
@@ -10,9 +8,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/config.sh"
 
-# ============================================
-# ARGUMENTOS
-# ============================================
+# Argumentos
 
 # Defaults
 RANGE_START_ARG="${RANGE_START}"
@@ -54,9 +50,7 @@ log_info "Run ID: ${RUN_ID}"
 log_info "Procesos: ${NP_ARG}"
 log_info "Rango: [${RANGE_START_ARG}, ${RANGE_END_ARG})"
 
-# ============================================
-# VERIFICAR PREREQUISITOS
-# ============================================
+# Verificar hostfile
 
 # Hostfile
 HOSTFILE="${PROJECT_DIR}/cluster/hosts_latest.txt"
@@ -91,9 +85,7 @@ for host in "${ALL_HOSTS[@]}"; do
     log_info "✓ ${host}"
 done
 
-# ============================================
-# CREAR DIRECTORIO DE LOGS
-# ============================================
+# Crear directorio de logs local
 
 LOG_DIR="${PROJECT_DIR}/cluster/logs/${RUN_ID}"
 mkdir -p "${LOG_DIR}"
@@ -105,9 +97,7 @@ for host in "${ALL_HOSTS[@]}"; do
     ssh "${USER}@${host}" "rm -rf ${REMOTE_LOG_DIR}/* && mkdir -p ${REMOTE_LOG_DIR}" || true
 done
 
-# ============================================
-# CONSTRUIR COMANDO MPIRUN
-# ============================================
+# Construir comando mpirun
 
 MPIRUN_CMD="mpirun"
 MPIRUN_CMD+=" --hostfile ${HOSTFILE}"
@@ -129,9 +119,7 @@ log_info "  Comando MPI"
 log_info "========================================"
 log_info "${MPIRUN_CMD}"
 
-# ============================================
-# EJECUTAR MPIRUN
-# ============================================
+# Ejecutar mpirun
 
 log_info ""
 log_info "========================================"
@@ -159,9 +147,7 @@ log_info "Exit code: ${EXIT_CODE}"
 log_info "Tiempo total: ${ELAPSED}s"
 log_info "Logs en: ${LOG_DIR}"
 
-# ============================================
-# RECOLECTAR LOGS DE NODOS
-# ============================================
+# Recolectar logs remotos
 
 log_info ""
 log_info "Recolectando logs de todos los nodos..."
@@ -180,9 +166,7 @@ done
 
 log_info "✓ Logs recolectados"
 
-# ============================================
-# GUARDAR METADATA
-# ============================================
+# Guardar metadata
 
 METADATA_FILE="${LOG_DIR}/run_metadata.json"
 
@@ -210,9 +194,7 @@ EOF
 
 log_info "✓ Metadata guardado: ${METADATA_FILE}"
 
-# ============================================
-# RESUMEN FINAL
-# ============================================
+# Resumen final
 
 log_info ""
 log_info "========================================"

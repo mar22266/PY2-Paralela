@@ -1,7 +1,4 @@
 #!/bin/bash
-# ============================================================================
-# aggregate_results.sh - Agregar logs en CSV
-# ============================================================================
 # Parsea logs de todos los ranks y genera CSV con resultados
 
 set -euo pipefail
@@ -10,10 +7,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/config.sh"
 
-# ============================================
-# ARGUMENTOS
-# ============================================
-
+# Argumentos
 if [[ $# -lt 1 ]]; then
     # Buscar última corrida
     LATEST_RUN=$(ls -1t "${PROJECT_DIR}/cluster/logs/" | head -1)
@@ -41,10 +35,7 @@ log_info "========================================"
 log_info "Run ID: ${RUN_ID}"
 log_info "Log dir: ${LOG_DIR}"
 
-# ============================================
-# PARSEAR LOGS
-# ============================================
-
+# Parser de logs y output CSV
 OUTPUT_CSV="${PROJECT_DIR}/cluster/results_${RUN_ID}.csv"
 
 log_info ""
