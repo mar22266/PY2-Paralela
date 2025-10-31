@@ -238,10 +238,6 @@ bash scripts/benchmark_hybrid_omp.sh
 
 ## 📚 Cómo Usar Esta Documentación
 
-**Para entender resultados:**
-1. Leer [`opt/reports/FINAL_REPORT.md`](opt/reports/FINAL_REPORT.md) - Overview completo
-2. Revisar [`artifacts/round2-20251028_221420/final_report.md`](artifacts/round2-20251028_221420/final_report.md) - Ganador del pipeline
-3. Ver [`artifacts/scaling_round3_20251029_002408/scaling_report.md`](artifacts/scaling_round3_20251029_002408/scaling_report.md) - Análisis de scaling
 
 **Para reproducir:**
 1. Ejecutar `bash scripts/validate_reproducibility.sh` - Validar setup
