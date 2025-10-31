@@ -1,7 +1,26 @@
-PY2-Paralela — Brute-force DES (MPI)
-------------------------------------
+Proyecto 2 - Computación Paralela y Distribuida — Brute-force DES (MPI)
 
 Romper DES por fuerza bruta. Incluye una versión secuencial y cinco enfoques paralelos con MPI: naïve (bloques), cíclico, dinámico, dinámico-adaptativo y permutado. Se mide tiempo secuencial, tiempo paralelo (tₚ = max rank) y speedup = tₛ / tₚ. Usa OpenSSL (libcrypto) para DES.
+
+**Estado:** Proyecto completo con profiling, optimización y validación  
+**Ganador:** `bruteforce_mpi_cyclic` (3.57x @ P=4, 89% eficiencia)  
+**Mejora validada:** +2.1% con compiler flags optimizadas
+
+## 📊 Resultados del Pipeline Evolutivo
+
+### Pipeline de 4 Rounds
+- **Round 0:** 6 algoritmos explorados → 3 finalistas
+- **Round 1A:** Comparación algorítmica → cyclic, adaptive, permuted pasan
+- **Round 1B:** Tuning de hiperparámetros → cyclic mantiene liderazgo
+- **Round 2:** Competencia final → **cyclic ganador (3.0x promedio)**
+- **Round 3:** Scaling analysis → 3.57x @ P=4 (89% eff), límite en P=8
+
+### Profiling y Optimización
+- **FASE A (gprof):** DES kernel = 67%, MPI overhead < 1%
+- **FASE B (vectorización):** Compiler flags → +2.1% mejora validada
+- **Optimizaciones MPI:** Chunking/batching fallaron (-6x a -8x slowdown)
+
+**📚 Documentación completa:** Ver [`opt/reports/FINAL_REPORT.md`](opt/reports/FINAL_REPORT.md)
 
 Qué hace
 -----------
@@ -48,8 +67,43 @@ Estrategias de paralelización
 ## Compilación
 
 ```bash
+# Binarios baseline
 make
+
+# Binarios con compiler flags optimizadas (+2.1% validado)
+bash scripts/compile_bins_opt.sh
 ```
+
+**Binarios optimizados disponibles en:** `build_bins_opt/`
+
+## 🔬 Reproducir Pipeline y Profiling
+
+### Validar Estado del Proyecto
+```bash
+bash scripts/validate_reproducibility.sh
+```
+
+### Reproducir Pipeline Completo (4 Rounds)
+```bash
+bash scripts/round0_probe.sh          # Exploración inicial
+bash scripts/round1a_algorithmic.sh   # Comparación algorítmica
+bash scripts/round1b_tuning.sh        # Tuning de hiperparámetros
+bash scripts/round2_final.sh          # Competencia final
+bash scripts/round3_scaling.sh        # Análisis de scaling
+```
+
+### Reproducir Profiling (FASE A + B)
+```bash
+bash opt/scripts/profile_des_kernel.sh    # FASE A: Identificar bottleneck
+bash opt/scripts/vectorize_des_test.sh    # FASE B: Vectorización y flags
+```
+
+### Validar Mejora con Compiler Flags
+```bash
+bash scripts/benchmark_flags_long.sh      # Benchmark estable (5M keys)
+```
+
+**Tiempo total:** ~30 minutos (automatizado)
 
 
 ## Ejemplos de uso
@@ -90,3 +144,90 @@ RANK | TESTS | STATUS        | TIME(s)
 -   Tiempo total (max rank): 0.022228 s
 
 
+
+## 📚 Documentación Completa
+
+### Reportes Principales
+- **[`opt/reports/FINAL_REPORT.md`](opt/reports/FINAL_REPORT.md)** - 🎯 Reporte final completo (542 líneas)
+  - Pipeline evolutivo (4 rounds)
+  - Profiling FASE A + B
+  - Validación de mejoras (+2.1%)
+  - Conclusiones y reproducibilidad
+
+### Índice de Documentación
+- **[`opt/INDEX.md`](opt/INDEX.md)** - Índice completo de todos los reportes
+- **[`opt/LESSONS_LEARNED.md`](opt/LESSONS_LEARNED.md)** - Por qué fallaron las optimizaciones MPI
+- **[`opt/reports/PROFILING_SUMMARY.md`](opt/reports/PROFILING_SUMMARY.md)** - Resumen ejecutivo profiling
+
+### Estructura del Proyecto
+```
+PY2-Paralela/
+├── src/                    # Código fuente (6 algoritmos MPI)
+├── build_bins_opt/         # Binarios optimizados (+2.1%)
+├── scripts/                # Scripts del pipeline y benchmarks
+├── opt/                    # Optimizaciones avanzadas y profiling
+│   ├── reports/           # �� Reportes de profiling y análisis
+│   ├── scripts/           # Scripts de profiling automatizados
+│   └── src/               # Implementaciones experimentales
+├── artifacts/              # Resultados de benchmarks (CSV/JSON)
+│   ├── round0-*/          # Exploración inicial
+│   ├── round1a-*/         # Comparación algorítmica
+│   ├── round1b-*/         # Tuning
+│   ├── round2-*/          # Final
+│   └── scaling_round3-*/  # Scaling analysis
+└── README.md              # Este archivo
+```
+
+## 🎯 Conclusiones Principales
+
+### ✅ Has Alcanzado el Techo de Eficiencia
+
+**Evidencia:**
+- 🔬 Profiling: DES kernel 67%, MPI overhead <1%
+- 📊 Benchmarks: +2.1% última mejora posible con compiler flags
+- 🧪 9 optimizaciones probadas, solo 1 funcionó
+- 📈 Scaling: límite teórico de Amdahl alcanzado (P=8)
+
+**Límites identificados:**
+1. **DES kernel (67%):** OpenSSL ya optimizado en assembly
+2. **MPI overhead (<1%):** Ya minimizado en cyclic baseline
+3. **Amdahl's Law:** 12% serial → speedup máximo ~8.3x
+4. **Early-stop crítico:** Ahorra 98% de keys, no sacrificar
+
+**Recomendación:** cyclic + compiler flags es óptimo para este workload
+
+## 🧪 Experimental: Hybrid MPI+OpenMP
+
+**Nueva implementación híbrida disponible:** `src/hybrid/bruteforce_mpi_cyclic_omp.c`
+
+Combina paralelización MPI (entre procesos) con OpenMP (dentro de cada proceso) para explorar mejora adicional en memoria compartida.
+
+```bash
+# Compilar versión híbrida
+bash scripts/compile_hybrid_omp.sh
+
+# Ejecutar (ejemplo: 4 procesos MPI × 2 hilos OpenMP = 8 workers)
+export OMP_NUM_THREADS=2
+mpirun -np 4 ./build_bins_opt/bruteforce_mpi_cyclic_omp \
+  -c data/cipher.bin -s "es una prueba de" -L 0 -U 8388608
+
+# Benchmark automatizado
+bash scripts/benchmark_hybrid_omp.sh
+```
+
+**Documentación completa:** Ver [`src/hybrid/README.md`](src/hybrid/README.md)
+
+**Mejora esperada:** 1.05x-1.15x vs MPI puro en nodos con memoria compartida (8+ cores)
+
+## 📚 Cómo Usar Esta Documentación
+
+
+**Para reproducir:**
+1. Ejecutar `bash scripts/validate_reproducibility.sh` - Validar setup
+2. Correr `bash scripts/round3_scaling.sh` - Benchmark rápido
+3. Ejecutar `bash opt/scripts/profile_des_kernel.sh` - Profiling completo
+
+## 🏆 Créditos
+
+**Autor:** Sergio Orellana, Andre Marroquin y Rodrigo Mansilla
+**Fecha:** Octubre 2025  

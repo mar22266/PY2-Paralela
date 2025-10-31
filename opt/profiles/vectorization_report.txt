@@ -1,0 +1,147 @@
+/home/rodri/PY2-Paralela/opt/src/des_microbench.c: In function ‘main’:
+/home/rodri/PY2-Paralela/opt/src/des_microbench.c:62:9: warning: unused variable ‘nlen’ [-Wunused-variable]
+   62 |     int nlen = strlen(needle);
+      |         ^~~~
+/home/rodri/PY2-Paralela/opt/src/des_microbench.c:70:27: missed: couldn't vectorize loop
+/home/rodri/PY2-Paralela/opt/src/des_microbench.c:70:27: missed: not vectorized: control flow in loop.
+/home/rodri/PY2-Paralela/opt/src/des_microbench.c:21:5: note: vectorized 0 loops in function.
+/home/rodri/PY2-Paralela/opt/src/des_microbench.c:28:18: missed: statement clobbers memory: N_21 = strtoull (_4, 0B, 10);
+/usr/include/x86_64-linux-gnu/bits/stdio2.h:86:10: missed: statement clobbers memory: __printf_chk (2, "============================================\n");
+/usr/include/x86_64-linux-gnu/bits/stdio2.h:86:10: missed: statement clobbers memory: __printf_chk (2, "  DES Microbenchmark\n");
+/usr/include/x86_64-linux-gnu/bits/stdio2.h:86:10: missed: statement clobbers memory: __printf_chk (2, "============================================\n");
+/usr/include/x86_64-linux-gnu/bits/stdio2.h:86:10: missed: statement clobbers memory: __printf_chk (2, "Iteraciones: %lu\n", N_21);
+/usr/include/x86_64-linux-gnu/bits/stdio2.h:86:10: missed: statement clobbers memory: __printf_chk (2, "Compilado con: ");
+/usr/include/x86_64-linux-gnu/bits/stdio2.h:86:10: missed: statement clobbers memory: __printf_chk (2, "-O%d ", 1);
+/usr/include/x86_64-linux-gnu/bits/stdio2.h:86:10: missed: statement clobbers memory: __printf_chk (2, "-mavx2 ");
+/usr/include/x86_64-linux-gnu/bits/stdio2.h:86:10: missed: statement clobbers memory: __printf_chk (2, "-mavx ");
+/usr/include/x86_64-linux-gnu/bits/stdio2.h:86:10: missed: statement clobbers memory: __printf_chk (2, "-msse4.2 ");
+/usr/include/x86_64-linux-gnu/bits/stdio2.h:86:10: missed: statement clobbers memory: __printf_chk (2, "\n\n");
+/home/rodri/PY2-Paralela/opt/src/des_microbench.c:55:45: missed: statement clobbers memory: cipher_23 = malloc (69);
+/home/rodri/PY2-Paralela/opt/src/des_microbench.c:59:5: missed: statement clobbers memory: des_encrypt_buffer (123456, "Esta es una prueba de vectorizacion DES para medir throughput", 61, cipher_23);
+/usr/include/x86_64-linux-gnu/bits/stdio2.h:86:10: missed: statement clobbers memory: __printf_chk (2, "\xe2\x86\x92 Inicio benchmark...\n\n");
+/home/rodri/PY2-Paralela/opt/src/des_microbench.c:17:5: missed: statement clobbers memory: clock_gettime (1, &ts);
+/home/rodri/PY2-Paralela/opt/src/des_microbench.c:71:12: missed: statement clobbers memory: _5 = des_try_key (k_73, cipher_23, 61, "prueba");
+/home/rodri/PY2-Paralela/opt/src/des_microbench.c:17:5: missed: statement clobbers memory: clock_gettime (1, &ts);
+/usr/include/x86_64-linux-gnu/bits/stdio2.h:86:10: missed: statement clobbers memory: __printf_chk (2, "\xe2\x9c\x93 Completado\n\n");
+/usr/include/x86_64-linux-gnu/bits/stdio2.h:86:10: missed: statement clobbers memory: __printf_chk (2, "Resultados:\n");
+/usr/include/x86_64-linux-gnu/bits/stdio2.h:86:10: missed: statement clobbers memory: __printf_chk (2, "  \xe2\x80\xa2 Tiempo total     : %.6f s\n", elapsed_25);
+/usr/include/x86_64-linux-gnu/bits/stdio2.h:86:10: missed: statement clobbers memory: __printf_chk (2, "  \xe2\x80\xa2 Keys probadas    : %lu\n", N_21);
+/usr/include/x86_64-linux-gnu/bits/stdio2.h:86:10: missed: statement clobbers memory: __printf_chk (2, "  \xe2\x80\xa2 Throughput       : %.0f keys/sec\n", _7);
+/usr/include/x86_64-linux-gnu/bits/stdio2.h:86:10: missed: statement clobbers memory: __printf_chk (2, "  \xe2\x80\xa2 Tiempo por key   : %.3f \xc2\xb5s\n", _10);
+/usr/include/x86_64-linux-gnu/bits/stdio2.h:86:10: missed: statement clobbers memory: __printf_chk (2, "  \xe2\x80\xa2 Matches encontrados: %lu\n", matches_72);
+/usr/include/x86_64-linux-gnu/bits/stdio2.h:86:10: missed: statement clobbers memory: __printf_chk (2, "\n");
+/usr/include/x86_64-linux-gnu/bits/stdio2.h:86:10: missed: statement clobbers memory: __printf_chk (2, "THROUGHPUT_KEYS_PER_SEC: %.0f\n", _7);
+/usr/include/x86_64-linux-gnu/bits/stdio2.h:86:10: missed: statement clobbers memory: __printf_chk (2, "TIME_PER_KEY_USEC: %.3f\n", _10);
+/home/rodri/PY2-Paralela/opt/src/des_microbench.c:92:5: missed: statement clobbers memory: free (cipher_23);
+/usr/include/x86_64-linux-gnu/bits/stdio2.h:79:10: missed: statement clobbers memory: __fprintf_chk (stderr.0_2, 2, "USO: %s <N_ITERATIONS>\n", _1);
+/usr/include/x86_64-linux-gnu/bits/stdio2.h:79:10: missed: statement clobbers memory: __fprintf_chk (stderr.1_3, 2, "  N_ITERATIONS: n\xc3\xbamero de keys a probar (ej: 1000000)\n");
+/usr/include/x86_64-linux-gnu/bits/stdio2.h:79:10: note: ***** Analysis failed with vector mode V4DI
+/usr/include/x86_64-linux-gnu/bits/stdio2.h:79:10: note: ***** Skipping vector mode V32QI, which would repeat the analysis for V4DI
+/home/rodri/PY2-Paralela/src/des_utils.c:48:23: missed: couldn't vectorize loop
+/home/rodri/PY2-Paralela/src/des_utils.c:48:66: missed: not vectorized: unsupported data-type long unsigned int
+/home/rodri/PY2-Paralela/src/des_utils.c:70:12: note: vectorized 0 loops in function.
+/home/rodri/PY2-Paralela/src/des_utils.c:57:20: missed: statement clobbers memory: _70 = OSSL_PROVIDER_load (0B, "default");
+/home/rodri/PY2-Paralela/src/des_utils.c:58:20: missed: statement clobbers memory: _71 = OSSL_PROVIDER_load (0B, "legacy");
+/home/rodri/PY2-Paralela/src/des_utils.c:66:12: missed: statement clobbers memory: _67 = EVP_CIPHER_fetch (0B, "DES-ECB", 0B);
+/home/rodri/PY2-Paralela/src/des_utils.c:79:27: missed: statement clobbers memory: ctx_26 = EVP_CIPHER_CTX_new ();
+/home/rodri/PY2-Paralela/src/des_utils.c:90:16: missed: statement clobbers memory: _9 = EVP_DecryptInit_ex (ctx_26, _67, 0B, &key8, 0B);
+/home/rodri/PY2-Paralela/src/des_utils.c:91:16: missed: statement clobbers memory: EVP_CIPHER_CTX_set_padding (ctx_26, 0);
+/home/rodri/PY2-Paralela/src/des_utils.c:93:16: missed: statement clobbers memory: _12 = EVP_DecryptUpdate (ctx_26, out_36(D), &outl, in_37(D), _76);
+/home/rodri/PY2-Paralela/src/des_utils.c:94:9: missed: statement clobbers memory: EVP_DecryptFinal_ex (ctx_26, _16, &fin);
+/home/rodri/PY2-Paralela/src/des_utils.c:84:16: missed: statement clobbers memory: _1 = EVP_EncryptInit_ex (ctx_26, _67, 0B, &key8, 0B);
+/home/rodri/PY2-Paralela/src/des_utils.c:85:16: missed: statement clobbers memory: EVP_CIPHER_CTX_set_padding (ctx_26, 0);
+/home/rodri/PY2-Paralela/src/des_utils.c:87:16: missed: statement clobbers memory: _4 = EVP_EncryptUpdate (ctx_26, out_36(D), &outl, in_37(D), _76);
+/home/rodri/PY2-Paralela/src/des_utils.c:88:9: missed: statement clobbers memory: EVP_EncryptFinal_ex (ctx_26, _8, &fin);
+/home/rodri/PY2-Paralela/src/des_utils.c:97:5: missed: statement clobbers memory: EVP_CIPHER_CTX_free (ctx_26);
+/home/rodri/PY2-Paralela/src/des_utils.c:98:5: missed: statement clobbers memory: EVP_CIPHER_free (_67);
+/home/rodri/PY2-Paralela/src/des_utils.c:80:17: missed: statement clobbers memory: EVP_CIPHER_free (_67);
+/home/rodri/PY2-Paralela/src/des_utils.c:48:41: note: ***** Analysis succeeded with vector mode V32QI
+/home/rodri/PY2-Paralela/src/des_utils.c:48:41: note: SLPing BB part
+/home/rodri/PY2-Paralela/src/des_utils.c:48:41: note: Costing subgraph: 
+/home/rodri/PY2-Paralela/src/des_utils.c:48:41: note: node 0x3102c9b8 (max_nunits=8, refcnt=1) vector(8) unsigned char
+/home/rodri/PY2-Paralela/src/des_utils.c:48:41: note: op template: MEM[(unsigned char *)&key8] = _75;
+/home/rodri/PY2-Paralela/src/des_utils.c:48:41: note: 	stmt 0 MEM[(unsigned char *)&key8] = _75;
+/home/rodri/PY2-Paralela/src/des_utils.c:48:41: note: 	stmt 1 MEM[(unsigned char *)&key8 + 1B] = _101;
+/home/rodri/PY2-Paralela/src/des_utils.c:48:41: note: 	stmt 2 MEM[(unsigned char *)&key8 + 2B] = _113;
+/home/rodri/PY2-Paralela/src/des_utils.c:48:41: note: 	stmt 3 MEM[(unsigned char *)&key8 + 3B] = _125;
+/home/rodri/PY2-Paralela/src/des_utils.c:48:41: note: 	stmt 4 MEM[(unsigned char *)&key8 + 4B] = _137;
+/home/rodri/PY2-Paralela/src/des_utils.c:48:41: note: 	stmt 5 MEM[(unsigned char *)&key8 + 5B] = _149;
+/home/rodri/PY2-Paralela/src/des_utils.c:48:41: note: 	stmt 6 MEM[(unsigned char *)&key8 + 6B] = _161;
+/home/rodri/PY2-Paralela/src/des_utils.c:48:41: note: 	stmt 7 MEM[(unsigned char *)&key8 + 7B] = _62;
+/home/rodri/PY2-Paralela/src/des_utils.c:48:41: note: 	children 0x3102cab8
+/home/rodri/PY2-Paralela/src/des_utils.c:48:41: note: node (external) 0x3102cab8 (max_nunits=1, refcnt=1) vector(8) unsigned char
+/home/rodri/PY2-Paralela/src/des_utils.c:48:41: note: 	{ _75, _101, _113, _125, _137, _149, _161, _62 }
+/home/rodri/PY2-Paralela/src/des_utils.c:48:41: note: Cost model analysis: 
+/home/rodri/PY2-Paralela/src/des_utils.c:48:41: note: Cost model analysis for part in loop 0:
+  Vector cost: 92
+  Scalar cost: 128
+/home/rodri/PY2-Paralela/src/des_utils.c:48:41: note: Basic block will be vectorized using SLP
+/home/rodri/PY2-Paralela/src/des_utils.c:48:41: note: Vectorizing SLP tree:
+/home/rodri/PY2-Paralela/src/des_utils.c:48:41: note: node 0x3102c9b8 (max_nunits=8, refcnt=1) vector(8) unsigned char
+/home/rodri/PY2-Paralela/src/des_utils.c:48:41: note: op template: MEM[(unsigned char *)&key8] = _75;
+/home/rodri/PY2-Paralela/src/des_utils.c:48:41: note: 	stmt 0 MEM[(unsigned char *)&key8] = _75;
+/home/rodri/PY2-Paralela/src/des_utils.c:48:41: note: 	stmt 1 MEM[(unsigned char *)&key8 + 1B] = _101;
+/home/rodri/PY2-Paralela/src/des_utils.c:48:41: note: 	stmt 2 MEM[(unsigned char *)&key8 + 2B] = _113;
+/home/rodri/PY2-Paralela/src/des_utils.c:48:41: note: 	stmt 3 MEM[(unsigned char *)&key8 + 3B] = _125;
+/home/rodri/PY2-Paralela/src/des_utils.c:48:41: note: 	stmt 4 MEM[(unsigned char *)&key8 + 4B] = _137;
+/home/rodri/PY2-Paralela/src/des_utils.c:48:41: note: 	stmt 5 MEM[(unsigned char *)&key8 + 5B] = _149;
+/home/rodri/PY2-Paralela/src/des_utils.c:48:41: note: 	stmt 6 MEM[(unsigned char *)&key8 + 6B] = _161;
+/home/rodri/PY2-Paralela/src/des_utils.c:48:41: note: 	stmt 7 MEM[(unsigned char *)&key8 + 7B] = _62;
+/home/rodri/PY2-Paralela/src/des_utils.c:48:41: note: 	children 0x3102cab8
+/home/rodri/PY2-Paralela/src/des_utils.c:48:41: note: node (external) 0x3102cab8 (max_nunits=1, refcnt=1) vector(8) unsigned char
+/home/rodri/PY2-Paralela/src/des_utils.c:48:41: note: 	{ _75, _101, _113, _125, _137, _149, _161, _62 }
+/home/rodri/PY2-Paralela/src/des_utils.c:48:41: note: ------>vectorizing SLP node starting from: MEM[(unsigned char *)&key8] = _75;
+/home/rodri/PY2-Paralela/src/des_utils.c:48:41: note: vect_is_simple_use: operand (unsigned char) _98, type of def: internal
+/home/rodri/PY2-Paralela/src/des_utils.c:48:41: note: vect_is_simple_use: operand (unsigned char) _110, type of def: internal
+/home/rodri/PY2-Paralela/src/des_utils.c:48:41: note: vect_is_simple_use: operand (unsigned char) _122, type of def: internal
+/home/rodri/PY2-Paralela/src/des_utils.c:48:41: note: vect_is_simple_use: operand (unsigned char) _134, type of def: internal
+/home/rodri/PY2-Paralela/src/des_utils.c:48:41: note: vect_is_simple_use: operand (unsigned char) _146, type of def: internal
+/home/rodri/PY2-Paralela/src/des_utils.c:48:41: note: vect_is_simple_use: operand (unsigned char) _158, type of def: internal
+/home/rodri/PY2-Paralela/src/des_utils.c:48:41: note: vect_is_simple_use: operand (unsigned char) key56_22(D), type of def: internal
+/home/rodri/PY2-Paralela/src/des_utils.c:48:41: note: transform store. ncopies = 1
+/home/rodri/PY2-Paralela/src/des_utils.c:48:41: note: create vector_type-pointer variable to type: vector(8) unsigned char  vectorizing a pointer ref: MEM[(unsigned char *)&key8]
+/home/rodri/PY2-Paralela/src/des_utils.c:48:41: note: created &MEM[(unsigned char *)&key8]
+/home/rodri/PY2-Paralela/src/des_utils.c:48:41: note: add new stmt: MEM <vector(8) unsigned char> [(unsigned char *)&key8] = _111;
+/home/rodri/PY2-Paralela/src/des_utils.c:48:41: note: vectorizing stmts using SLP.
+/home/rodri/PY2-Paralela/src/des_utils.c:48:41: optimized: basic block part vectorized using 32 byte vectors
+/home/rodri/PY2-Paralela/src/des_utils.c:48:41: note: ***** The result for vector mode V32QI would be the same
+/usr/include/x86_64-linux-gnu/bits/stdio2.h:79:10: missed: statement clobbers memory: __fprintf_chk (stderr.12_1, 2, "ERROR: OpenSSL no pudo inicializar DES-ECB (ver providers \'legacy\').\n");
+/home/rodri/PY2-Paralela/src/des_utils.c:118:9: missed: statement clobbers memory: exit (1);
+/home/rodri/PY2-Paralela/src/des_utils.c:118:9: note: ***** Analysis failed with vector mode V4DI
+/home/rodri/PY2-Paralela/src/des_utils.c:118:9: note: ***** Skipping vector mode V32QI, which would repeat the analysis for V4DI
+/home/rodri/PY2-Paralela/src/des_utils.c:12:15: missed: statement clobbers memory: f_10 = fopen (path_8(D), "rb");
+/home/rodri/PY2-Paralela/src/des_utils.c:14:9: missed: statement clobbers memory: _1 = fseek (f_10, 0, 2);
+/home/rodri/PY2-Paralela/src/des_utils.c:15:15: missed: statement clobbers memory: sz_13 = ftell (f_10);
+/home/rodri/PY2-Paralela/src/des_utils.c:17:5: missed: statement clobbers memory: rewind (f_10);
+/home/rodri/PY2-Paralela/src/des_utils.c:18:28: missed: statement clobbers memory: _3 = malloc (sz.0_2);
+/usr/include/x86_64-linux-gnu/bits/stdio2.h:212:12: missed: statement clobbers memory: _31 = __fread_alias (_3, 1, sz.0_2, f_10);
+/home/rodri/PY2-Paralela/src/des_utils.c:21:5: missed: statement clobbers memory: fclose (f_10);
+/home/rodri/PY2-Paralela/src/des_utils.c:22:28: missed: statement clobbers memory: free (_4);
+/home/rodri/PY2-Paralela/src/des_utils.c:19:18: missed: statement clobbers memory: fclose (f_10);
+/home/rodri/PY2-Paralela/src/des_utils.c:16:19: missed: statement clobbers memory: fclose (f_10);
+/home/rodri/PY2-Paralela/src/des_utils.c:14:39: missed: statement clobbers memory: fclose (f_10);
+/home/rodri/PY2-Paralela/src/des_utils.c:14:39: note: ***** Analysis failed with vector mode V4DI
+/home/rodri/PY2-Paralela/src/des_utils.c:14:39: note: ***** Skipping vector mode V32QI, which would repeat the analysis for V4DI
+/home/rodri/PY2-Paralela/src/des_utils.c:28:15: missed: statement clobbers memory: f_6 = fopen (path_4(D), "wb");
+/home/rodri/PY2-Paralela/src/des_utils.c:30:16: missed: statement clobbers memory: n_10 = fwrite (buf_7(D), 1, len_8(D), f_6);
+/home/rodri/PY2-Paralela/src/des_utils.c:31:5: missed: statement clobbers memory: fclose (f_6);
+/home/rodri/PY2-Paralela/src/des_utils.c:32:25: note: ***** Analysis failed with vector mode VOID
+/home/rodri/PY2-Paralela/src/des_utils.c:40:28: missed: statement clobbers memory: _2 = calloc (out_len_3, 1);
+/usr/include/x86_64-linux-gnu/bits/string_fortified.h:29:10: missed: statement clobbers memory: __builtin___memcpy_chk (_2, in_15(D), len_8(D), out_len_3);
+/usr/include/x86_64-linux-gnu/bits/string_fortified.h:29:10: note: ***** Analysis failed with vector mode V4DI
+/usr/include/x86_64-linux-gnu/bits/string_fortified.h:29:10: note: ***** Skipping vector mode V32QI, which would repeat the analysis for V4DI
+/home/rodri/PY2-Paralela/src/des_utils.c:106:10: missed: statement clobbers memory: _1 = do_cipher (1, key56_4(D), in_5(D), len_6(D), out_7(D));
+/usr/include/x86_64-linux-gnu/bits/stdio2.h:79:10: missed: statement clobbers memory: __fprintf_chk (stderr.5_2, 2, "ERROR: OpenSSL no pudo inicializar DES-ECB (ver providers \'legacy\').\n");
+/home/rodri/PY2-Paralela/src/des_utils.c:108:9: missed: statement clobbers memory: exit (1);
+/home/rodri/PY2-Paralela/src/des_utils.c:108:9: note: ***** Analysis failed with vector mode V4DI
+/home/rodri/PY2-Paralela/src/des_utils.c:108:9: note: ***** Skipping vector mode V32QI, which would repeat the analysis for V4DI
+/home/rodri/PY2-Paralela/src/des_utils.c:116:10: missed: statement clobbers memory: _1 = do_cipher (0, key56_3(D), in_4(D), len_5(D), out_6(D));
+/home/rodri/PY2-Paralela/src/des_utils.c:113:6: missed: statement clobbers memory: des_decrypt_buffer.part.0 ();
+/home/rodri/PY2-Paralela/src/des_utils.c:113:6: note: ***** Analysis failed with vector mode VOID
+/home/rodri/PY2-Paralela/src/des_utils.c:126:42: missed: statement clobbers memory: tmp_10 = malloc (_1);
+/home/rodri/PY2-Paralela/src/des_utils.c:116:10: missed: statement clobbers memory: _18 = do_cipher (0, key56_11(D), cipher_12(D), len_7(D), tmp_10);
+/home/rodri/PY2-Paralela/src/des_utils.c:130:14: missed: statement clobbers memory: _3 = strstr (tmp_10, needle_15(D));
+/home/rodri/PY2-Paralela/src/des_utils.c:131:5: missed: statement clobbers memory: free (tmp_10);
+/home/rodri/PY2-Paralela/src/des_utils.c:123:5: missed: statement clobbers memory: des_decrypt_buffer.part.0 ();
+/home/rodri/PY2-Paralela/src/des_utils.c:123:5: note: ***** Analysis failed with vector mode V32QI
+/home/rodri/PY2-Paralela/src/des_utils.c:123:5: note: ***** Skipping vector mode V32QI, which would repeat the analysis for V32QI

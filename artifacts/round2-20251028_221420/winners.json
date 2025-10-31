@@ -1,0 +1,25 @@
+{
+  "4": {
+    "easy": {
+      "variant": "cyclic",
+      "mean_speedup": 2.89981,
+      "std_speedup": 0.44547672438355296,
+      "mean_eff": 0.724952,
+      "iqr_speedup": 0.359067
+    },
+    "hard": {
+      "variant": "cyclic",
+      "mean_speedup": 3.0544162,
+      "std_speedup": 0.46767866838963257,
+      "mean_eff": 0.7636038,
+      "iqr_speedup": 0.464658
+    },
+    "med": {
+      "variant": "cyclic",
+      "mean_speedup": 3.1223894000000003,
+      "std_speedup": 0.7872525245334562,
+      "mean_eff": 0.780597,
+      "iqr_speedup": 1.071873
+    }
+  }
+}

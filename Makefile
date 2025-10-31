@@ -1,7 +1,5 @@
-# ================================
-#  PY2-Paralela - Makefile
+#  Proyecto 2 - Makefile
 #  OpenMPI + OpenSSL (DES, EVP API)
-# ================================
 
 MPICC := mpicc
 CC    := gcc

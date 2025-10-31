@@ -1,4 +1,7 @@
 // importaicon de libs
+#ifndef _POSIX_C_SOURCE
+#define _POSIX_C_SOURCE 199309L
+#endif
 #include <mpi.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -189,10 +192,12 @@ int main(int argc, char **argv){
         printf("  • Detalle por proceso\n");
         printf("    RANK |   TESTS     |  STATUS           |  TIME(s)\n");
         printf("    -----+-------------+-------------------+---------\n");
+        uint64_t sum_tests = 0;
         for(int r=0;r<P;r++){
             const char *status_str = (r==0 ? "MASTER" : (status[r]==2 ? "FOUND" : "STOP(SIGNAL)"));
             printf(" %5d | %11" PRIu64 " | %-17s | %7.4f%s\n",
                    r, tests[r], status_str, times[r], (r==winner? "  <==":""));
+            sum_tests += tests[r];
         }
 
         // muestra resultado y desencripta si se encontro llave
@@ -213,6 +218,11 @@ int main(int argc, char **argv){
         double tmax=0.0; for(int r=0;r<P;r++) if(times[r]>tmax) tmax=times[r];
         printf("\n  • Resumen global\n");
         printf("    - Tiempo total (max rank)  : %.6f s\n\n", tmax);
+        
+        // Standardized metrics for pipeline parsing
+        printf("rank_found: %d\n", (winner>=1 ? winner : -1));
+        printf("tests_total: %" PRIu64 "\n", sum_tests);
+        printf("Tiempo total (max rank): %.6f s\n", tmax);
         fflush(stdout);
 
         // libera arreglos de metricas

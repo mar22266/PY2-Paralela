@@ -1,0 +1,82 @@
+{
+  "naive": {
+    "easy": {
+      "param_name": "nan",
+      "param_value": "base",
+      "speedup": 0.94176,
+      "t_par_s": 0.095726,
+      "efficiency": 0.11772
+    },
+    "med": {
+      "param_name": "nan",
+      "param_value": "base",
+      "speedup": 0.894509,
+      "t_par_s": 0.083752,
+      "efficiency": 0.111813625
+    }
+  },
+  "cyclic": {
+    "easy": {
+      "param_name": "nan",
+      "param_value": "base",
+      "speedup": 2.440338,
+      "t_par_s": 0.036942,
+      "efficiency": 0.30504225
+    },
+    "med": {
+      "param_name": "nan",
+      "param_value": "base",
+      "speedup": 3.077052,
+      "t_par_s": 0.024347,
+      "efficiency": 0.3846315
+    }
+  },
+  "dynamic": {
+    "easy": {
+      "param_name": "B=20000",
+      "param_value": "B20000",
+      "speedup": 2.211154,
+      "t_par_s": 0.040771,
+      "efficiency": 0.27639425
+    },
+    "med": {
+      "param_name": "B=20000",
+      "param_value": "B20000",
+      "speedup": 1.888647,
+      "t_par_s": 0.039667,
+      "efficiency": 0.236080875
+    }
+  },
+  "adaptive": {
+    "easy": {
+      "param_name": "T=1.8",
+      "param_value": "T1.8",
+      "speedup": 3.364596,
+      "t_par_s": 0.026794,
+      "efficiency": 0.4205745
+    },
+    "med": {
+      "param_name": "T=1.3",
+      "param_value": "T1.3",
+      "speedup": 2.724849,
+      "t_par_s": 0.027494,
+      "efficiency": 0.340606125
+    }
+  },
+  "permuted": {
+    "easy": {
+      "param_name": "R=12345",
+      "param_value": "R12345",
+      "speedup": 4.725638,
+      "t_par_s": 0.019077,
+      "efficiency": 0.59070475
+    },
+    "med": {
+      "param_name": "R=12345",
+      "param_value": "R12345",
+      "speedup": 2.486541,
+      "t_par_s": 0.030129,
+      "efficiency": 0.310817625
+    }
+  }
+}

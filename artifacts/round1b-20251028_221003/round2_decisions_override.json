@@ -1,0 +1,20 @@
+{
+  "cyclic": {
+    "passes_to_round2": true,
+    "categories_improved_10pct": ["easy", "med", "hard"],
+    "max_efficiency": 0.790,
+    "reason": "Sobreviviente Round 1A - config óptima"
+  },
+  "adaptive": {
+    "passes_to_round2": true,
+    "categories_improved_10pct": ["easy", "med", "hard"],
+    "max_efficiency": 0.590,
+    "reason": "Sobreviviente Round 1A - config óptima"
+  },
+  "permuted": {
+    "passes_to_round2": true,
+    "categories_improved_10pct": ["easy", "med"],
+    "max_efficiency": 1.235,
+    "reason": "Sobreviviente Round 1A - config óptima"
+  }
+}
