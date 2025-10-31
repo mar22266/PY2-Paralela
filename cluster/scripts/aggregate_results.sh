@@ -29,9 +29,7 @@ if [[ ! -d "${LOG_DIR}" ]]; then
     exit 1
 fi
 
-log_info "========================================"
 log_info "  Agregando Resultados"
-log_info "========================================"
 log_info "Run ID: ${RUN_ID}"
 log_info "Log dir: ${LOG_DIR}"
 
@@ -166,9 +164,7 @@ if [[ $? -eq 0 ]]; then
     
     # Mostrar resumen
     log_info ""
-    log_info "========================================"
     log_info "  Resumen de Resultados"
-    log_info "========================================"
     
     if command -v column &> /dev/null; then
         head -20 "${OUTPUT_CSV}" | column -t -s,

@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
-#
-# Meta: Encontrar la mejor versión de cada sobreviviente de Round 1A.
+# Encontrar la mejor versión de cada sobreviviente de Round 1A.
 # Cada variante se optimiza según sus fortalezas específicas.
-##
 
 set -euo pipefail
 
@@ -54,9 +52,7 @@ print(' '.join(survivors))
     fi
 fi
 
-echo "========================================="
 echo "ROUND 1B: Optimización Individual"
-echo "========================================="
 echo "Sobrevivientes: $SURVIVORS"
 echo "P=$P, KEY=$KEY, REPS=$REPS"
 echo "Artifacts: $ARTIFACTS_DIR"
@@ -203,9 +199,7 @@ cp "$CSV_FILE" "logs/bench_round1b-$TS.csv"
 
 
 echo ""
-echo "========================================="
 echo "Analizando resultados y seleccionando mejores configs..."
-echo "========================================="
 
 python3 - "$CSV_FILE" "$ARTIFACTS_DIR" "$LAST_R1A" <<'PYTHON_SCRIPT'
 import pandas as pd
@@ -372,9 +366,7 @@ print(f"  - {report_file}")
 PYTHON_SCRIPT
 
 echo ""
-echo "========================================="
 echo "ROUND 1B Completado"
-echo "========================================="
 echo "CSV: $CSV_FILE"
 echo "Configs: $ARTIFACTS_DIR/best_configs.json"
 echo "Decisiones: $ARTIFACTS_DIR/round2_decisions.json"

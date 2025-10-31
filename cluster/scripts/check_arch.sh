@@ -8,9 +8,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/config.sh"
 
-log_info "========================================"
 log_info "  Verificando Arquitecturas"
-log_info "========================================"
 
 # Verificar acceso SSH
 declare -A ARCH_MAP
@@ -42,9 +40,7 @@ done
 
 # Analizar homogeneidad
 log_info ""
-log_info "========================================"
 log_info "  Análisis de Compatibilidad"
-log_info "========================================"
 
 # Obtener arquitectura única
 UNIQUE_ARCHS=($(printf '%s\n' "${ARCH_MAP[@]}" | sort -u))
@@ -73,9 +69,7 @@ fi
 
 # Verificar binario existente
 log_info ""
-log_info "========================================"
 log_info "  Verificando Binario Existente"
-log_info "========================================"
 
 MASTER_ARCH="${ARCH_MAP[${HOST_A}]}"
 
@@ -96,9 +90,7 @@ else
 fi
 
 log_info ""
-log_info "========================================"
 log_info "  Resumen"
-log_info "========================================"
 echo ""
 printf "%-20s %-15s %-30s\n" "HOST" "ARCH" "STATUS"
 echo "------------------------------------------------------------"

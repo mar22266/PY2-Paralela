@@ -18,9 +18,7 @@ fi
 
 TARGET_HOST="$1"
 
-log_info "========================================"
 log_info "  Preparando Nodo: ${TARGET_HOST}"
-log_info "========================================"
 
 # Verificar conectividad
 
@@ -158,18 +156,14 @@ log_info "(Esto puede tomar varios minutos...)"
 
 if ssh "${USER}@${TARGET_HOST}" "bash -s" <<< "${REMOTE_SCRIPT}"; then
     log_info ""
-    log_info "========================================"
     log_info "✓ Nodo ${TARGET_HOST} preparado exitosamente"
-    log_info "========================================"
     log_info ""
     log_info "Próximo paso:"
     log_info "  bash ${SCRIPT_DIR}/check_arch.sh"
     exit 0
 else
     log_error ""
-    log_error "========================================"
     log_error "✗ Falló preparación del nodo ${TARGET_HOST}"
-    log_error "========================================"
     log_error ""
     log_error "Revisa los errores arriba y reintenta"
     exit 1

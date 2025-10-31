@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
-#
-# round1a_algorithmic.sh — ROUND 1A: Comparación Algorítmica
+# ROUND 1A: Comparación Algorítmica
 # Meta: Medir "mérito" del enfoque bajo igualdad de condiciones.
-
 
 set -euo pipefail
 
@@ -45,9 +43,7 @@ ADAPTIVE_T_MEDIAN=1.5
 PERMUTED_R_MEDIAN=12345
 
 
-echo "========================================="
 echo "ROUND 1A: Comparación Algorítmica"
-echo "========================================="
 echo "Condiciones: -O3 -march=native (igualdad)"
 echo "P=$P, KEY=$KEY, REPS=$REPS"
 echo "Artifacts: $ARTIFACTS_DIR"
@@ -168,9 +164,7 @@ cp "$CSV_FILE" "logs/bench_round1a-$TS.csv"
 
 
 echo ""
-echo "========================================="
 echo "Analizando resultados (eliminación fundamental)..."
-echo "========================================="
 
 python3 - "$CSV_FILE" "$ARTIFACTS_DIR" <<'PYTHON_SCRIPT'
 import pandas as pd
@@ -253,9 +247,7 @@ print(f"\nDecisiones guardadas en: {decision_file}")
 PYTHON_SCRIPT
 
 echo ""
-echo "========================================="
 echo "ROUND 1A Completado"
-echo "========================================="
 echo "CSV: $CSV_FILE"
 echo "Decisiones: $ARTIFACTS_DIR/elimination_decisions.json"
 echo ""

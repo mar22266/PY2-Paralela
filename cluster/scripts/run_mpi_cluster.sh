@@ -43,9 +43,7 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-log_info "========================================"
 log_info "  Ejecutando MPI Cluster"
-log_info "========================================"
 log_info "Run ID: ${RUN_ID}"
 log_info "Procesos: ${NP_ARG}"
 log_info "Rango: [${RANGE_START_ARG}, ${RANGE_END_ARG})"
@@ -114,17 +112,13 @@ MPIRUN_CMD+=" -L ${RANGE_START_ARG}"
 MPIRUN_CMD+=" -U ${RANGE_END_ARG}"
 
 log_info ""
-log_info "========================================"
 log_info "  Comando MPI"
-log_info "========================================"
 log_info "${MPIRUN_CMD}"
 
 # Ejecutar mpirun
 
 log_info ""
-log_info "========================================"
 log_info "  Ejecutando..."
-log_info "========================================"
 log_info ""
 
 START_TIME=$(date +%s)
@@ -140,9 +134,7 @@ END_TIME=$(date +%s)
 ELAPSED=$((END_TIME - START_TIME))
 
 log_info ""
-log_info "========================================"
 log_info "  Ejecución Completada"
-log_info "========================================"
 log_info "Exit code: ${EXIT_CODE}"
 log_info "Tiempo total: ${ELAPSED}s"
 log_info "Logs en: ${LOG_DIR}"
@@ -197,9 +189,7 @@ log_info "✓ Metadata guardado: ${METADATA_FILE}"
 # Resumen final
 
 log_info ""
-log_info "========================================"
 log_info "  Resumen Final"
-log_info "========================================"
 log_info "Run ID: ${RUN_ID}"
 log_info "Exit code: ${EXIT_CODE}"
 log_info "Tiempo: ${ELAPSED}s"

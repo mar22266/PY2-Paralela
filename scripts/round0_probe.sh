@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
-#
-# round0_probe.sh — FASE 0: Exploración de Hiperparámetros
+# FASE 0: Exploración de Hiperparámetros
 # Ejecuta grid search corto en easy+med, guarda mejores configs en selected.json
-#
 
 set -euo pipefail
 
@@ -126,9 +124,7 @@ CSV_FILE="$CSV_DIR/bench_round0.csv"
 echo "category,variant,param_name,param_value,t_seq_s,t_par_s,speedup,rank_found,tests_total,log_file" > "$CSV_FILE"
 
 
-echo "========================================="
 echo "FASE 0: Exploración de Hiperparámetros"
-echo "========================================="
 echo "Artifacts: $ARTIFACTS_DIR"
 echo "P=$P, KEY=$KEY"
 echo ""
@@ -180,9 +176,7 @@ done
 
 
 echo ""
-echo "========================================="
 echo "Analizando resultados..."
-echo "========================================="
 
 python3 - "$CSV_DIR" "$ARTIFACTS_DIR" <<'PYTHON_SCRIPT'
 import pandas as pd
@@ -242,9 +236,7 @@ print(json.dumps(selections, indent=2))
 PYTHON_SCRIPT
 
 echo ""
-echo "========================================="
 echo "FASE 0 Completada"
-echo "========================================="
 echo "CSV: $CSV_FILE"
 echo "Selección: $ARTIFACTS_DIR/selected.json"
 echo ""

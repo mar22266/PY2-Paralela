@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
-# ==================================================================
 # Compilación de versión híbrida MPI+OpenMP
-# ==================================================================
 set -Eeuo pipefail
 
 PROJ_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -12,9 +10,7 @@ INCLUDE_DIR="$PROJ_DIR/include"
 
 mkdir -p "$OUT"
 
-echo "════════════════════════════════════════════════════════════"
 echo "  Compilando versión híbrida MPI+OpenMP"
-echo "════════════════════════════════════════════════════════════"
 
 # Flags agresivos de optimización + OpenMP
 CFLAGS=(
@@ -76,9 +72,7 @@ else
 fi
 
 echo ""
-echo "════════════════════════════════════════════════════════════"
 echo "  Binario híbrido disponible en: $OUT_BIN"
-echo "════════════════════════════════════════════════════════════"
 echo ""
 echo "Ejemplo de uso:"
 echo "  export OMP_NUM_THREADS=2"

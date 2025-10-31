@@ -8,9 +8,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/config.sh"
 
-log_info "========================================"
 log_info "  Configurando SSH Sin Contraseña"
-log_info "========================================"
 
 # Generar par de llaves SSH si no existe
 
@@ -62,9 +60,7 @@ done
 # Verificación final
 
 log_info ""
-log_info "========================================"
 log_info "  Verificación Final"
-log_info "========================================"
 
 ALL_OK=1
 for host in "${ALL_HOSTS[@]}"; do
@@ -78,16 +74,12 @@ done
 
 log_info ""
 if [[ ${ALL_OK} -eq 1 ]]; then
-    log_info "========================================"
     log_info "✓ SSH configurado exitosamente"
-    log_info "========================================"
     log_info ""
     log_info "Próximo paso:"
     log_info "  bash ${SCRIPT_DIR}/check_arch.sh"
     exit 0
 else
-    log_error "========================================"
     log_error "✗ Algunos nodos fallaron"
-    log_error "========================================"
     exit 1
 fi

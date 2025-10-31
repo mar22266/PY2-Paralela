@@ -1,16 +1,12 @@
 #!/usr/bin/env bash
-#
-# check_pipeline_ready.sh — Verificar que el pipeline está listo para ejecutarse
-#
+# Verificar que el pipeline está listo para ejecutarse
 
 set -e
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$PROJECT_ROOT"
 
-echo "========================================="
 echo "  VERIFICACIÓN DE PIPELINE"
-echo "========================================="
 echo ""
 
 ERRORS=0
@@ -185,9 +181,7 @@ done
 echo ""
 
 
-echo "========================================="
 echo "  RESUMEN"
-echo "========================================="
 
 if [[ $ERRORS -eq 0 && $WARNINGS -eq 0 ]]; then
     echo "✅ TODO LISTO - El pipeline puede ejecutarse"

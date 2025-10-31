@@ -264,6 +264,5 @@ bash scripts/benchmark_hybrid_omp.sh
 
 ---
 
-**Estado:** ✅ Implementación completa y funcional  
-**Autor:** PY2-Paralela  
+**Autor:** Sergio Orellana, Andre Marroquin y Rodrigo Mansilla
 **Fecha:** Octubre 2025

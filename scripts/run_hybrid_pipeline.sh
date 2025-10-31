@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 # Ejecuta las 4 fases del benchmarking híbrido:
-
-#
 # Uso:
 #   bash scripts/run_hybrid_pipeline.sh [opciones]
 
@@ -37,9 +35,7 @@ export KEY="${KEY:-10000000}"
 export MPIRUN_OVERSUBSCRIBE="${MPIRUN_OVERSUBSCRIBE:-1}"
 
 
-echo "========================================"
 echo "   PIPELINE HÍBRIDO DE BENCHMARKING"
-echo "========================================"
 echo "Configuración:"
 echo "  P = $P"
 echo "  REPS = $REPS"
@@ -59,9 +55,7 @@ fi
 if [[ $ONLY_ROUND1A -eq 0 && $ONLY_ROUND1B -eq 0 && $ONLY_ROUND2 -eq 0 ]]; then
     if [[ $SKIP_PHASE0 -eq 0 ]]; then
         echo ""
-        echo "========================================"
         echo "  FASE 0: Exploración de Hiperparámetros"
-        echo "========================================"
         echo "Duración estimada: 5-10 minutos"
         echo ""
         
@@ -85,9 +79,7 @@ fi
 if [[ $ONLY_PHASE0 -eq 0 && $ONLY_ROUND1B -eq 0 && $ONLY_ROUND2 -eq 0 ]]; then
     if [[ $SKIP_ROUND1A -eq 0 ]]; then
         echo ""
-        echo "========================================"
         echo "  ROUND 1A: Comparación Algorítmica"
-        echo "========================================"
         echo "Duración estimada: 10-15 minutos"
         echo ""
         
@@ -111,9 +103,7 @@ fi
 
 if [[ $ONLY_PHASE0 -eq 0 && $ONLY_ROUND1A -eq 0 && $ONLY_ROUND2 -eq 0 ]]; then
     echo ""
-    echo "========================================"
     echo "  ROUND 1B: Optimización Individual"
-    echo "========================================"
     echo "Duración estimada: 15-30 minutos (depende de sobrevivientes)"
     echo ""
     
@@ -134,9 +124,7 @@ fi
 
 if [[ $ONLY_PHASE0 -eq 0 && $ONLY_ROUND1A -eq 0 && $ONLY_ROUND1B -eq 0 ]]; then
     echo ""
-    echo "========================================"
     echo "  ROUND 2: Competencia Final"
-    echo "========================================"
     echo "Duración estimada: 10-20 minutos"
     echo ""
     
@@ -150,9 +138,7 @@ fi
 
 
 echo ""
-echo "========================================"
 echo "   PIPELINE COMPLETADO"
-echo "========================================"
 echo ""
 echo "Resultados:"
 

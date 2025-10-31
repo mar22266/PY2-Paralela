@@ -1,5 +1,4 @@
 # Barre 5 tamaños de espacio de llaves y mide tiempo en la versión secuencial.
-
 set -euo pipefail
 
 PROJ_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"

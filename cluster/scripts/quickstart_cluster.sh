@@ -8,9 +8,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/config.sh"
 
-log_info "========================================"
 log_info "  Quick Start - Cluster MPI Setup"
-log_info "========================================"
 log_info ""
 
 # Verificar configuración
@@ -30,9 +28,7 @@ fi
 
 # Paso 1: Configurar SSH sin contraseña
 log_info ""
-log_info "========================================" 
 log_info "PASO 1: Configurar SSH sin contraseña"
-log_info "========================================"
 log_info ""
 
 if bash "${SCRIPT_DIR}/setup_ssh.sh"; then
@@ -45,9 +41,7 @@ fi
 # Paso 2: Preparar nodos
 
 log_info ""
-log_info "========================================"
 log_info "PASO 2: Preparar nodos remotos"
-log_info "========================================"
 log_info ""
 
 for host in "${ALL_HOSTS[@]:1}"; do  # Skip maestro
@@ -64,9 +58,7 @@ done
 # Paso 3: Verificar arquitecturas
 
 log_info ""
-log_info "========================================"
 log_info "PASO 3: Verificar arquitecturas"
-log_info "========================================"
 log_info ""
 
 bash "${SCRIPT_DIR}/check_arch.sh"
@@ -74,9 +66,7 @@ bash "${SCRIPT_DIR}/check_arch.sh"
 # Paso 4: Compilar y distribuir binario
 
 log_info ""
-log_info "========================================"
 log_info "PASO 4: Compilar y distribuir binario"
-log_info "========================================"
 log_info ""
 
 # Compilar en maestro si no existe
@@ -100,9 +90,7 @@ fi
 # Paso 5: Generar hostfile
 
 log_info ""
-log_info "========================================"
 log_info "PASO 5: Generar hostfile"
-log_info "========================================"
 log_info ""
 
 if bash "${SCRIPT_DIR}/generate_hostfile.sh"; then
@@ -115,9 +103,7 @@ fi
 # Paso 6: Test run (opcional)
 
 log_info ""
-log_info "========================================"
 log_info "PASO 6: Test run (opcional)"
-log_info "========================================"
 log_info ""
 
 read -p "¿Ejecutar test run ahora? (y/n): " -n 1 -r
@@ -143,9 +129,7 @@ fi
 
 # Resumen final
 log_info ""
-log_info "========================================"
 log_info "✓ SETUP COMPLETO"
-log_info "========================================"
 log_info ""
 log_info "Cluster configurado con éxito!"
 log_info ""

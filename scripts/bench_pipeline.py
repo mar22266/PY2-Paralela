@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 benchmark_pipeline.py
 
@@ -27,26 +26,25 @@ import glob
 import re
 import logging
 
-# ------------------------------
 # Config / defaults
-# ------------------------------
+
 DEFAULT_TSEQ = 3.056193
 DEFAULT_THRESHOLD_PCT = 10.0
 DEFAULT_MIN_CATEGORIES = 2
 LOG_TIME_FORMAT = "%Y%m%d_%H%M%S"
 
-# ------------------------------
+
 # Logging
-# ------------------------------
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s %(levelname)s %(message)s",
     datefmt="%H:%M:%S",
 )
 
-# ------------------------------
+
 # Helpers
-# ------------------------------
+
 def safe_div(a, b):
     try:
         if b == 0 or pd.isna(b):
@@ -131,9 +129,9 @@ def coerce_numeric_cols(df: pd.DataFrame):
     df['P'] = pd.to_numeric(df['P'], errors='coerce').fillna(8).astype(float)
     return df
 
-# ------------------------------
+
 # Log parsing (safe, configurable)
-# ------------------------------
+
 def extract_from_logfile(logpath: str):
     """
     Extrae t_par_s, rank_found, tests_total desde un log. Regresa dict.
@@ -182,9 +180,9 @@ def extract_from_logfile(logpath: str):
 
     return {'t_par_s': t_par, 'rank_found': rank_found, 'tests_total': tests_total}
 
-# ------------------------------
+
 # Dataframe harmonization and metrics
-# ------------------------------
+
 def harmonize_and_fill(df: pd.DataFrame, default_tseq=DEFAULT_TSEQ, extract_logs=True):
     """
     - Coerciona columnas numéricas
@@ -238,9 +236,8 @@ def summarize(df: pd.DataFrame, by='variant'):
     ).reset_index()
     return agg
 
-# ------------------------------
+
 # Comparison and elimination rule
-# ------------------------------
 def compare_and_decide(baseline_df: pd.DataFrame, new_df: pd.DataFrame,
                        threshold_pct=DEFAULT_THRESHOLD_PCT, min_categories=DEFAULT_MIN_CATEGORIES):
     """
@@ -255,12 +252,7 @@ def compare_and_decide(baseline_df: pd.DataFrame, new_df: pd.DataFrame,
     merged['delta_mean_speedup_pct'] = (merged['mean_speedup_new'] - merged['mean_speedup_base']) / merged['mean_speedup_base'] * 100
     merged['delta_mean_eff_pct'] = (merged['mean_eff_new'] - merged['mean_eff_base']) / merged['mean_eff_base'] * 100
 
-    # Decision per variant: count categories where delta >= threshold_pct
-    # For this we need category-level diffs. If called with variant-level, we apply simple rule:
     decisions = []
-    # If this merged is for variants, but we need per-category counts: caller should aggregate by category.
-    # We'll apply a straightforward rule: if the variant appears in multiple categories in the raw new df
-    # caller may call compare_and_decide on category-level summaries to get category decisions.
     for _, row in merged.iterrows():
         name = row[key]
         delta = row.get('delta_mean_speedup_pct', np.nan)
@@ -270,9 +262,8 @@ def compare_and_decide(baseline_df: pd.DataFrame, new_df: pd.DataFrame,
     merged = merged.sort_values(by='delta_mean_speedup_pct', ascending=False)
     return merged, decisions
 
-# ------------------------------
+
 # CLI / Main pipeline
-# ------------------------------
 def main():
     p = argparse.ArgumentParser(description="Benchmark pipeline: extract, summarize, compare, decide.")
     p.add_argument('--baseline', required=True, help='CSV baseline (bench_full.csv)')
@@ -313,9 +304,7 @@ def main():
     print("INFO Normalizando new...")
     new_raw = sanitize_efficiency(new_raw)
 
-    # --------------------------------------------------
     #  Normalización automática de nombres de variantes
-    # --------------------------------------------------
     def normalize_variant_name(name: str) -> str:
         if not isinstance(name, str):
             return name
@@ -346,7 +335,6 @@ def main():
         base_raw['variant'] = base_raw['variant'].apply(normalize_variant_name)
     if 'variant' in new_raw.columns:
         new_raw['variant'] = new_raw['variant'].apply(normalize_variant_name)
-    # --------------------------------------------------
 
     # harmonize/extract
     logging.info("Normalizando baseline...")
@@ -376,10 +364,6 @@ def main():
     cdiff, cdec = compare_and_decide(base_cat, new_cat, threshold_pct=args.threshold_pct, min_categories=args.min_categories)
     cdiff.to_csv(os.path.join(out_dir,'round_vs_baseline_category_diff.csv'), index=False)
 
-    # make human decision for variants using category-level info:
-    # rule: a variant "passes" if it appears in new_df rows for >= min_categories AND
-    # for those categories the delta >= threshold_pct in aggregated category diffs.
-    # Simpler approach: look at new raw, count categories per variant where mean_speedup_new >= mean_speedup_base*(1+threshold)
     try:
         # build mapping variant -> list of categories in new_df (raw)
         variant_categories = {}
@@ -429,7 +413,6 @@ def main():
     with open(os.path.join(out_dir,'decision.json'), 'w') as fh:
         json.dump(result, fh, indent=2)
 
-    # Print summary
     logging.info("=== Resumen rápido (top del CSV de diff) ===")
     logging.info("\n" + vdiff[['variant','mean_speedup_base','mean_speedup_new','delta_mean_speedup_pct']].to_string(index=False))
     logging.info("Decisiones guardadas en: " + os.path.join(out_dir,'decision.json'))

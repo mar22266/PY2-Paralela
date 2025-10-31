@@ -1,10 +1,7 @@
 #!/usr/bin/env bash
-# ============================================================================
-# benchmark_compiler_flags.sh - Medir impacto de compiler flags optimizadas
-# ============================================================================
+# Medir impacto de compiler flags optimizadas
 # Compara binarios compilados con -O2 vs -O3 + flags agresivas
 # Ejecuta tests representativos y calcula speedup real
-# ============================================================================
 
 set -euo pipefail
 
@@ -22,9 +19,7 @@ TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 RESULTS_DIR="artifacts/compiler_flags_benchmark_$TIMESTAMP"
 mkdir -p "$RESULTS_DIR"
 
-echo "=============================================="
 echo "  Benchmark: Compiler Flags Optimization"
-echo "=============================================="
 echo ""
 echo "Comparando:"
 echo "  • Baseline: -O2"
@@ -33,9 +28,7 @@ echo ""
 echo "Resultados: $RESULTS_DIR"
 echo ""
 
-# ============================================================================
-# 1. COMPILAR BASELINE CON -O2
-# ============================================================================
+# 1. Compilar binarios con ambas configuraciones
 
 echo -e "${GREEN}▶ Paso 1: Compilar baseline con -O2${NC}"
 echo ""
@@ -68,9 +61,7 @@ echo ""
 echo -e "${GREEN}✓ Baseline compilado${NC}"
 echo ""
 
-# ============================================================================
-# 2. CONFIGURACIÓN DE TESTS
-# ============================================================================
+# 2. Configurar tests de benchmark
 
 CIPHER="data/cipher.bin"
 SUBSTR="es una prueba de"
@@ -88,9 +79,7 @@ echo ""
 CSV_FILE="$RESULTS_DIR/benchmark_results.csv"
 echo "config,type,P,L,U,binary_type,rep,time_sec" > "$CSV_FILE"
 
-# ============================================================================
-# 3. FUNCIÓN DE BENCHMARK
-# ============================================================================
+# 3. Función de benchmark
 
 run_test() {
     local config=$1
@@ -127,9 +116,7 @@ run_test() {
     echo "$time_output"
 }
 
-# ============================================================================
-# 4. EJECUTAR BENCHMARKS
-# ============================================================================
+# 4. Ejecutar benchmarks
 
 for config in "${!TESTS[@]}"; do
     IFS=' ' read -r type P L U <<< "${TESTS[$config]}"
@@ -158,9 +145,7 @@ done
 echo -e "${GREEN}✓ Benchmarks completados${NC}"
 echo ""
 
-# ============================================================================
-# 5. ANÁLISIS DE RESULTADOS
-# ============================================================================
+# 5. Análisis de resultados
 
 echo -e "${GREEN}▶ Paso 3: Analizar resultados${NC}"
 echo ""
@@ -241,9 +226,7 @@ EOPY
 
 cat "$RESULTS_DIR/analysis.txt"
 
-# ============================================================================
-# 6. GENERAR REPORTE
-# ============================================================================
+# 6. Generar reporte final
 
 cat > "$RESULTS_DIR/REPORT.md" <<'EOFREPORT'
 # Benchmark: Impacto de Compiler Flags Optimizadas
@@ -336,9 +319,7 @@ El profiling de FASE B predijo **~3% de mejora** con flags optimizadas:
 EOFREPORT
 
 echo ""
-echo "=============================================="
 echo "  RESUMEN"
-echo "=============================================="
 echo ""
 echo "📊 Resultados guardados en:"
 echo "  • $RESULTS_DIR/benchmark_results.csv"

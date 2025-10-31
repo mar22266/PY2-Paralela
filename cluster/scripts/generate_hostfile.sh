@@ -11,9 +11,7 @@ source "${SCRIPT_DIR}/config.sh"
 RUN_ID=$(generate_run_id)
 HOSTFILE="${PROJECT_DIR}/cluster/hosts_${RUN_ID}.txt"
 
-log_info "========================================"
 log_info "  Generando Hostfile MPI"
-log_info "========================================"
 
 # Crear hostfile
 
@@ -66,9 +64,7 @@ fi
 # Mostrar configuración final
 
 log_info ""
-log_info "========================================"
 log_info "  Configuración Final"
-log_info "========================================"
 log_info "Hostfile: ${HOSTFILE}"
 log_info "Nodos: ${#ALL_HOSTS[@]}"
 log_info "Slots/nodo: ${SLOTS_PER_HOST}"

@@ -1,6 +1,3 @@
-
-
-
 set -euo pipefail
 
 
@@ -40,9 +37,7 @@ if [[ -z "$LAST_R1B" || ! -f "$LAST_R1B/best_configs.json" ]]; then
     exit 1
 fi
 
-echo "========================================="
 echo "ROUND 2: Competencia Final"
-echo "========================================="
 echo "Configuraciones desde: $LAST_R1B/best_configs.json"
 echo "P values: $P_VALUES"
 echo "REPS: $REPS"
@@ -156,9 +151,7 @@ for variant, cats in configs.items():
 
 for P in $P_VALUES; do
     echo ""
-    echo "========================================="
     echo "P = $P"
-    echo "========================================="
     
     for variant in $FINALISTS; do
         echo ""
@@ -197,9 +190,7 @@ done
 cp "$CSV_FILE" "logs/bench_round2-$TS.csv"
 
 echo ""
-echo "========================================="
 echo "Generando análisis y gráficas..."
-echo "========================================="
 
 python3 - "$CSV_FILE" "$ARTIFACTS_DIR" <<'PYTHON_SCRIPT'
 import pandas as pd
@@ -219,9 +210,7 @@ for col in ['P', 't_seq_s', 't_par_s', 'speedup', 'efficiency']:
 
 df = df[(df['speedup'] > 0) & (df['t_par_s'] > 0)].copy()
 
-# ========================================
 # Resumen por P, variant, category
-# ========================================
 summary = df.groupby(['P', 'variant', 'category']).agg(
     reps=('speedup', 'count'),
     mean_speedup=('speedup', 'mean'),
@@ -242,9 +231,7 @@ output_dir = Path(artifacts_dir)
 summary_file = output_dir / "csv" / "round2_summary.csv"
 summary.to_csv(summary_file, index=False)
 
-# ========================================
 # Análisis de Ganadores
-# ========================================
 winners = {}
 for P in summary['P'].unique():
     winners[int(P)] = {}
@@ -276,9 +263,7 @@ for P, cats in winners.items():
         print(f"  {cat:6s}: {data['variant']:15s} speedup={data['mean_speedup']:.3f}±{data['std_speedup']:.3f} "
               f"eff={data['mean_eff']:.3f} IQR={data['iqr_speedup']:.3f}")
 
-# ========================================
 # Generar reporte markdown
-# ========================================
 report_file = output_dir / "final_report.md"
 with open(report_file, 'w') as f:
     f.write("# Round 2 - Final Competition Report\\n\\n")
@@ -333,9 +318,7 @@ print(f"  - Reporte: {report_file}")
 PYTHON_SCRIPT
 
 echo ""
-echo "========================================="
 echo "ROUND 2 Completado"
-echo "========================================="
 echo "CSV: $CSV_FILE"
 echo "Resumen: $ARTIFACTS_DIR/csv/round2_summary.csv"
 echo "Ganadores: $ARTIFACTS_DIR/winners.json"

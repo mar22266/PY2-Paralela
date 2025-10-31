@@ -1,20 +1,12 @@
 #!/usr/bin/env bash
-# ============================================================================
-# round3_scaling.sh - Análisis de escalabilidad (cyclic vs adaptive)
-# ============================================================================
-# Propósito: Evaluar cómo escalan cyclic y adaptive con P=4,8,16
+# Análisis de escalabilidad (cyclic vs adaptive)
+# Evaluar cómo escalan cyclic y adaptive con P=4,8,16
 #
 # Uso:
 #   P_VALUES="4 8 16" VARIANTS="cyclic adaptive" REPS=3 bash scripts/round3_scaling.sh
-#
-# Variables de entorno:
-#   P_VALUES    - Lista de valores de P (default: "4 8 16")
-#   VARIANTS    - Variantes a probar (default: "cyclic adaptive")
-#   REPS        - Repeticiones por configuración (default: 3)
-#   KEY         - Clave para cifrado (default: 10000000, fuera de rango)
-#   CATEGORY    - Categoría: easy/med/hard (default: easy)
-# ============================================================================
 
+
+# Variables de entorno
 set -euo pipefail
 
 PROJ_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -47,9 +39,7 @@ LOG_DIR="$OUT_DIR/logs"
 CSV_DIR="$OUT_DIR/csv"
 mkdir -p "$LOG_DIR" "$CSV_DIR"
 
-echo "============================================"
 echo "  ROUND 3: Scaling Analysis"
-echo "============================================"
 echo "Timestamp:   $TIMESTAMP"
 echo "Output dir:  $OUT_DIR"
 echo "Category:    $CATEGORY (range [$L, $U))"
@@ -57,7 +47,6 @@ echo "Variants:    $VARIANTS"
 echo "P values:    $P_VALUES"
 echo "Repetitions: $REPS"
 echo "Key:         $KEY (fuera de rango)"
-echo "============================================"
 echo
 
 
@@ -296,14 +285,10 @@ cat > "$REPORT_MD" <<EOF
 **P values:** $P_VALUES  
 **Repetitions:** $REPS per configuration  
 
----
-
 ## 🎯 Objetivo
 
 Evaluar cómo escalan las dos mejores variantes (cyclic y adaptive) 
 cuando aumentamos el número de procesos de 4 → 8 → 16.
-
----
 
 ## 📊 Resultados
 
@@ -314,8 +299,6 @@ Ver archivo CSV completo: \`csv/scaling_summary.csv\`
 \`\`\`
 $(cat "$CSV_SUMMARY" | column -s, -t)
 \`\`\`
-
----
 
 ## 🔍 Interpretación
 
@@ -329,15 +312,12 @@ $(cat "$CSV_SUMMARY" | column -s, -t)
 - **P=8**: Se recupera parcialmente (~3.0x, eficiencia 37%)
 - **P=16**: Escalado limitado (~4.5x, eficiencia 28%)
 
----
-
 ## 💡 Conclusiones
 
 1. **Cyclic** mantiene escalabilidad casi lineal hasta P=8
 2. **Adaptive** sufre de overhead de sincronización que empeora con más procesos
 3. Para producción, cyclic es la elección óptima en este rango de P
 
----
 
 ## 📁 Archivos generados
 
@@ -346,7 +326,6 @@ $(cat "$CSV_SUMMARY" | column -s, -t)
 - \`csv/scaling_summary.csv\` - Promedios por (variant, P)
 - \`scaling_report.md\` - Este reporte
 
----
 
 **Generado:** $(date)
 EOF
@@ -355,15 +334,12 @@ echo "✓ Reporte: $REPORT_MD"
 echo
 
 
-echo "============================================"
 echo "  ✓ ROUND 3 COMPLETADO"
-echo "============================================"
 echo "Directorio:  $OUT_DIR"
 echo "Ejecuciones: $TOTAL_RUNS tests"
 echo "CSV raw:     $CSV_RAW"
 echo "CSV summary: $CSV_SUMMARY"
 echo "Reporte MD:  $REPORT_MD"
-echo "============================================"
 echo
 echo "💡 Ver resultados:"
 echo "   cat $CSV_SUMMARY"

@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
-# ==================================================================
 # Benchmark híbrido MPI+OpenMP
 # Compara cyclic puro vs cyclic+OpenMP con diferentes configuraciones
-# ==================================================================
 set -Eeuo pipefail
 
 PROJ_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -21,9 +19,7 @@ ARTIFACTS_DIR="$PROJ_DIR/artifacts/hybrid_omp_benchmark_${TIMESTAMP}"
 mkdir -p "$ARTIFACTS_DIR/logs"
 CSV_OUT="$ARTIFACTS_DIR/benchmark_results.csv"
 
-echo "════════════════════════════════════════════════════════════"
 echo "  Benchmark Híbrido MPI+OpenMP"
-echo "════════════════════════════════════════════════════════════"
 echo "Artifacts: $ARTIFACTS_DIR"
 echo "Rango: [$L, $U)"
 echo ""
@@ -106,20 +102,14 @@ run_benchmark() {
     echo ""
 }
 
-# ═══════════════════════════════════════════════════════════════
 # Configuraciones de benchmark
-# ═══════════════════════════════════════════════════════════════
 
-echo "════════════════════════════════════════════════════════════"
 echo "  FASE 1: Baseline MPI Puro (sin OpenMP)"
-echo "════════════════════════════════════════════════════════════"
 for P in 2 4 8; do
     run_benchmark "mpi_cyclic" "$PURE_BIN" "$P" 1
 done
 
-echo "════════════════════════════════════════════════════════════"
 echo "  FASE 2: Híbrido MPI+OpenMP (configuraciones balanceadas)"
-echo "════════════════════════════════════════════════════════════"
 
 # P=2, OMP=2,4 (total 4,8 workers)
 run_benchmark "mpi_omp_cyclic" "$HYBRID_BIN" 2 2
@@ -131,18 +121,14 @@ run_benchmark "mpi_omp_cyclic" "$HYBRID_BIN" 4 2
 # P=8, OMP=1 (total 8 workers - equivalente a MPI puro)
 run_benchmark "mpi_omp_cyclic" "$HYBRID_BIN" 8 1
 
-echo "════════════════════════════════════════════════════════════"
 echo "  FASE 3: Configuraciones extremas (si hay cores suficientes)"
-echo "════════════════════════════════════════════════════════════"
 
 # P=1, OMP=4,8 (híbrido degenerado - solo OpenMP)
 run_benchmark "mpi_omp_cyclic" "$HYBRID_BIN" 1 4
 run_benchmark "mpi_omp_cyclic" "$HYBRID_BIN" 1 8
 
 echo ""
-echo "════════════════════════════════════════════════════════════"
 echo "  Benchmark completado"
-echo "════════════════════════════════════════════════════════════"
 echo "Resultados: $CSV_OUT"
 echo ""
 

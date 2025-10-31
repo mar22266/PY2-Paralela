@@ -1,18 +1,13 @@
 #!/usr/bin/env bash
-# ============================================================================
-# validate_reproducibility.sh - Verificar reproducibilidad del proyecto
-# ============================================================================
-# Objetivo: Validar que todos los scripts y binarios funcionan correctamente
-# Uso: bash scripts/validate_reproducibility.sh
+# Verificar reproducibilidad del proyecto
+# Valida que todos los scripts y binarios funcionan correctamente
 
 set -euo pipefail
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$PROJECT_ROOT"
 
-echo "============================================"
 echo "  Validación de Reproducibilidad"
-echo "============================================"
 echo ""
 
 # Colores
@@ -60,9 +55,7 @@ check_executable() {
     fi
 }
 
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "1️⃣  Verificando Binarios Optimizados"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "Verificando Binarios Optimizados"
 check_executable "build_bins_opt/bruteforce_mpi" "Binario MPI naive"
 check_executable "build_bins_opt/bruteforce_mpi_cyclic" "Binario MPI cyclic (GANADOR)"
 check_executable "build_bins_opt/bruteforce_mpi_dynamic" "Binario MPI dynamic"
@@ -71,17 +64,13 @@ check_executable "build_bins_opt/bruteforce_mpi_permuted" "Binario MPI permuted"
 check_executable "build_bins_opt/bruteforce_seq" "Binario secuencial"
 echo ""
 
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "2️⃣  Verificando Binarios Experimentales"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "Verificando Binarios Experimentales"
 check_executable "opt/build/bruteforce_mpi_cyclic_opt" "Cyclic chunked (experimental)"
 check_executable "opt/build/bruteforce_mpi_adaptive_opt" "Adaptive batching (experimental)"
 check_executable "opt/build/bruteforce_mpi_hybrid" "Hybrid SPMD (experimental)"
 echo ""
 
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "3️⃣  Verificando Scripts del Pipeline"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "Verificando Scripts del Pipeline"
 check_executable "scripts/compile_bins.sh" "Compilar binarios baseline"
 check_executable "scripts/compile_bins_opt.sh" "Compilar binarios optimizados"
 check_executable "scripts/round0_probe.sh" "Round 0: Exploración"
@@ -91,18 +80,14 @@ check_executable "scripts/round2_final.sh" "Round 2: Final"
 check_executable "scripts/round3_scaling.sh" "Round 3: Scaling"
 echo ""
 
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "4️⃣  Verificando Scripts de Profiling"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "Verificando Scripts de Profiling"
 check_executable "opt/scripts/profile_des_kernel.sh" "FASE A: Profiling DES"
 check_executable "opt/scripts/vectorize_des_test.sh" "FASE B: Vectorización"
 check_executable "opt/scripts/compile_optimized.sh" "Compilar opt/"
 check_executable "scripts/benchmark_flags_long.sh" "Benchmark flags largo"
 echo ""
 
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "5️⃣  Verificando Documentación"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "Verificando Documentación"
 check_file "opt/INDEX.md" "Índice de documentación"
 check_file "opt/README.md" "README optimizaciones"
 check_file "opt/LESSONS_LEARNED.md" "Lecciones aprendidas"
@@ -113,9 +98,7 @@ check_file "opt/reports/VECTORIZATION_DES.md" "FASE B: Vectorización"
 check_file "opt/reports/COMPILER_FLAGS_FINAL.md" "Validación compiler flags"
 echo ""
 
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "6️⃣  Verificando Artifacts de Resultados"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "Verificando Artifacts de Resultados"
 check_dir "artifacts/round0-20251028_215602" "Round 0 artifacts"
 check_dir "artifacts/round1a-20251028_220715" "Round 1A artifacts"
 check_dir "artifacts/round1b-20251028_221003" "Round 1B artifacts"
@@ -129,9 +112,7 @@ check_file "artifacts/round2-20251028_221420/winners.json" "Round 2 results"
 check_file "artifacts/scaling_round3_20251029_002408/scaling_report.md" "Round 3 report"
 echo ""
 
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "7️⃣  Smoke Test: Ejecutar Binario Ganador"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "Smoke Test: Ejecutar Binario Ganador"
 if [[ -x "build_bins_opt/bruteforce_mpi_cyclic" ]] && [[ -f "data/cipher.bin" ]]; then
     echo "Ejecutando smoke test (P=4, 2M keys)..."
     
@@ -149,9 +130,7 @@ else
 fi
 echo ""
 
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "8️⃣  Verificar Compilación con Flags Finales"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "Verificar Compilación con Flags Finales"
 if grep -q "\-ftree\-vectorize" scripts/compile_bins_opt.sh; then
     echo -e "${GREEN}✓${NC} Compiler flags incluyen -ftree-vectorize"
 else
@@ -168,18 +147,14 @@ fi
 checks=$((checks + 2))
 echo ""
 
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "📊 RESUMEN"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "Total checks: $checks"
 echo "Passed: $((checks - failures))"
 echo "Failed: $failures"
 echo ""
 
 if [[ $failures -eq 0 ]]; then
-    echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo -e "${GREEN}✓ VALIDACIÓN EXITOSA${NC}"
-    echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo ""
     echo "🎉 Proyecto PY2-Paralela está en estado limpio y reproducible"
     echo ""
@@ -190,9 +165,7 @@ if [[ $failures -eq 0 ]]; then
     echo ""
     exit 0
 else
-    echo -e "${RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo -e "${RED}✗ VALIDACIÓN FALLÓ${NC}"
-    echo -e "${RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo ""
     echo "⚠️  Por favor corrige los errores antes de continuar"
     echo ""
